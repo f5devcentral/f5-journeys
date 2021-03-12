@@ -161,7 +161,7 @@ This is done to ensure that Journeys does not produce an invalid configuration (
 ### Fetching Journeys
 
 ```
-git clone git@github.com:f5devcentral/f5-journeys.git
+git clone https://github.com/f5devcentral/f5-journeys.git
 cd f5-journeys
 ```
 
