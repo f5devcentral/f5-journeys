@@ -3,9 +3,9 @@
 ----
 ## Contents:
 - [Description](#description)
-- [Prerequisites](#big-ip-prerequisites)
-- [Configuration migration considerations](#configuration-migration-considerations)
-- [Requirements](#journeys-setup-requirements)
+- [BIG-IP Prerequisites](#big-ip-prerequisites)
+- [Configuration Migration Considerations](#configuration-migration-considerations)
+- [Journeys Setup Requirements](#journeys-setup-requirements)
 - [Usage](#usage)
 - [Contributing](#contributing)
 
@@ -30,12 +30,12 @@ Supported features:
 This module finds the following configuration elements in the source configuration, that are no longer supported by the BIG-IP running on the VELOS platform. There will be a few solutions provided, for every incompatible element found, to be chosen from.
 + **CGNAT** - VELOS platform currently does not support [Carrier Grade NAT](https://techdocs.f5.com/en-us/bigip-15-0-0/big-ip-cgnat-implementations.html) configuration.
 + **ClassOfService** - the CoS feature is not supported on the VELOS platform.
-+ **CompatibilityLevel** - determines the level of platform hardware capability for for device DoS/DDoS prevention. VELOS currently supports only level 0 and 1 (the latter if software DoS processing mode is enabled). Details on the feature can be found [here](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-system-dos-protection-and-protocol-firewall-implementations/detecting-and-preventing-system-dos-and-ddos-attacks.html).
++ **CompatibilityLevel** - determines the level of platform hardware capability for device DoS/DDoS prevention. VELOS currently supports only level 0 and 1 (the latter if software DoS processing mode is enabled). Details on the feature can be found [here](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-system-dos-protection-and-protocol-firewall-implementations/detecting-and-preventing-system-dos-and-ddos-attacks.html).
 + **DoubleTagging** - indicates support for the IEEE 802.1QinQ standard, informally known as Double Tagging or Q-in-Q, which VELOS does not have as for now. More info on the feature can be found [here](https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-tmos-routing-administration-14-1-0/vlans-vlan-groups-and-vxlan.html).
 + **MGMT-DHCP** - on VELOS mgmt-dhcp configuration is handled mostly on a partition level.
 + **PEM** - although keeping the PEM configuration in the configuration files will not cause load errors (it will be discarded when loading the UCS), as of now PEM is not functionally supported by VELOS. Journeys removes PEM elements from the configuration to avoid confusion.
 + **SPDAG** - [source/destination DAG](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-service-provider-generic-message-administration/generic-message-example/generic-message-example/about-dag-modes-for-bigip-scalability/sourcedestination-dag-sp-dag.html) is not supported on VELOS.
-+ **sPVA** - some of the security Packet Velocity Acceleration (PVA) features do not have hardware support on VELOS - these either must be removed or  use software mode.
++ **sPVA** - some security Packet Velocity Acceleration (PVA) features do not have hardware support on VELOS - these either must be removed or  use software mode.
 + **TRUNK** - on VELOS Trunks cannot be defined on the BIG-IP level.
 + **VirtualWire** - the [virtual-wire feature](https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/big-ip-system-configuring-for-layer-2-transparency-14-0-0/01.html) is not supported on VELOS systems.
 + **VlanGroup** - on VELOS [vlan-groups](https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-tmos-routing-administration-14-1-0/vlans-vlan-groups-and-vxlan.html) cannot be defined on the BIG-IP level.
@@ -45,7 +45,7 @@ This module finds the following configuration elements in the source configurati
 
 **Journeys does not support** feature parity gaps that:
 
-+ Reside outside of a UCS archive to be migrated, e.g. in a host UCS (not in a guest UCS):
++ Reside outside a UCS archive to be migrated, e.g. in a host UCS (not in a guest UCS):
     + Crypto/Compression Guest Isolation - Dedicated/Shared SSL-mode for guests is not supported on VELOS. [Feature details.](https://support.f5.com/csp/article/K22363295)
     + Traffic Rate Limiting (affects vCMP guests only) - assigning a traffic profile for vcmp guests is currently not supported on a VELOS tenant.
 
@@ -56,7 +56,7 @@ This module finds the following configuration elements in the source configurati
     + Wildcard SYN cookie protection - as above, software processing will replace hardware one.
 
 ### Fixup module
-This module finds issues that might occur during specific upgrades between BIG-IP versions or migrations between specific platforms. This feature will be extended over time with new fixes.
+The module finds issues that might occur during specific upgrades between BIG-IP versions or migrations between specific platforms. This feature will be extended over time with new fixes.
 Available fixups:
 + **VLANMACassignment** - solves an issue with mac assignment set to `vmw-compat` that can happen when migrating from a BIG-IP Virtual Edition.
 
@@ -65,7 +65,7 @@ Available fixups:
 
 Mandatory steps before running Journeys:
 
-1. **Master key transfer** - to allow handling encypted objects, before running Journeys, you need to set a device master key password on both Source and Destination Systems. There are two ways to do this:
+1. **Master key transfer** - to allow handling encrypted objects, before running Journeys, you need to set a device master key password on both Source and Destination Systems. There are two ways to do this:
 
     1. Copy the Source System master key with f5mku and re-key master key on the Destination System:
 
@@ -95,7 +95,7 @@ Mandatory steps before running Journeys:
           tmsh save sys config
           ```
 
-        - Set the master key password on the Destination System by entering the following commands, using the password remembered in the previous step::
+        - Set the master key password on the Destination System by entering the following commands, using the password remembered in the previous step:
           ```
           tmsh modify sys crypto master-key prompt-for-password
           tmsh save sys config
@@ -107,7 +107,7 @@ Mandatory steps before running Journeys:
 
 1. **SSH public keys migration**
    * SSH public keys for passwordless authentication may stop work after UCS migration, since the UCS file may not contain SSH public keys for users.
-   * If the version is affected by the problem then:
+   * If the version is affected by the problem, then:
       - all key files have to be migrated manually from the Source System to the Destination System
       - /etc/ssh directory has to be added to the UCS backup configuration of the Source System
    * For more details on how to manually migrate SSH keys and verify if your version is affected by the problem, please read:
@@ -121,7 +121,6 @@ Mandatory steps before running Journeys:
 1. **Destination System preparation for Journeys**
    1. Destination VELOS BIG-IP VM tenant should be deployed and configured on the chassis partition
    1. VLANs, trunks and interfaces should already be configured and assigned to other VM Tenant (on the chassis partition level)
-   1. All modules from the Source System should be provisioned on the destination host (with the exception for PEM and CGNAT)
 
 ### BIG-IP account prerequisites
 To ensure all Journeys features work properly, an account with Administrator role and advanced shell (bash) access is
@@ -131,7 +130,7 @@ for migration might be desired.
  > IMPORTANT: Due to the above, certain features of Journeys - specifically the ones requiring ssh access to the machine - are not available on BIG-IPs running in the **Appliance mode**. The user will be required to perform manual variants of these steps instead.
 
 ----
-## Configuration migration considerations
+## Configuration Migration Considerations
 
 ### BIG-IP device swap
 To minimize downtime, F5 recommends deploying the new VELOS hardware alongside existing BIG-IP deployment. By default, config created by Journeys will
@@ -142,13 +141,13 @@ F5 recommends the following procedure for moving production traffic to a new dev
 
 1. Deploy the VELOS device, trying to keep physical connections as close as possible to the old BIG-IP (respective interfaces assigned to the same physical networks)
 1. Deploy Journeys-generated config to a new BIG-IP. Note that some validators like LTM module comparison are expected to fail as Virtual Servers will be down, therefore it's recommended to use CLI command `journey deploy` and run validators in step 5. or deselect `LTM VS check`
-1. If the configuration was deployed successfully, review system status. If the status is "REBOOT REQUIRED", perform reboot before shutting down interfaces on the old BIG-IP system.
+1. If the configuration was deployed successfully, review system status. If the status is "REBOOT REQUIRED", perform the reboot before shutting down interfaces on the old BIG-IP system.
 1. Shutdown interfaces on the old BIG-IP system.
 1. Re-add interfaces to existing VLANs on the new VELOS hardware.
 1. Run validators with the `journey diagnose` command.
 
 ### SPDAG/VlanGroup mitigation
-If SPDAG or VlanGroup removal mitigation is applied and a conflicted object is configured on a Virtual Server, Journeys **will remove all VLANs assigned for that particular Virtual Server** - not only the conflicted one.
+If SPDAG or VlanGroup removal mitigation is applied, and a conflicted object is configured on a Virtual Server, Journeys **will remove all VLANs assigned for that particular Virtual Server** - not only the conflicted one.
 This is done to ensure that Journeys does not produce an invalid configuration (Virtual Servers cannot share identifiers, as they need to be unique).
 
 ----
@@ -166,7 +165,7 @@ cd f5-journeys
 ```
 
 ### Preparing the environment
-1. Create a directory for all of Journeys operations - modifying configs, logging etc.
+1. Create a directory for all of Journeys operations - modifying configs, logging, etc.
 
    You can use any directory in place of `/tmp/journeys`.
    ```
@@ -220,12 +219,12 @@ There are two options available for loading the source configuration.
 ![](media/gui_screenshot_2_source_bigip_system.png)
 
 ##### AS3 support
-To process an AS3 declaration, the first option must be selected. The tool will track any changes made to the configuration by resolving the issues and mirror them in the AS3 declaration.
+To process an AS3 declaration, the first option must be selected. The tool tracks any changes made to the configuration by resolving the issues and then mirrors them into the AS3 declaration.
 
 >WARNING: Vlans, trunks and vlan-groups may uniquely identify virtual servers.
 
 #### Configuration Analysis
-This page shows a preview of unsupported configuration objects which will be resolved in further steps.
+The page shows a preview of unsupported configuration objects which will be resolved in further steps.
 
 ![](media/gui_screenshot_3_configuration_analysis.png)
 
@@ -239,7 +238,7 @@ Inspect the issues to browse mitigations proposed by Journeys.
 ![](media/gui_screenshot_5_resolution_details.png)
 
 #### Resolution Summary
-Here all the changes are listed to review. Reverting a change will undo all subsequent changes (listed below).
+All the changes are listed to review. Reverting a change will undo all subsequent changes (listed below).
 
 ![](media/gui_screenshot_6_resolution_summary.png)
 
@@ -275,13 +274,13 @@ This can be done either manually or using Journeys command `journey download-ucs
       - Transfer the resulting UCS file from `/var/local/ucs/` onto your journey host, to your working directory.
    1. With Journeys:
       ```
-      journey download-ucs --host <bigip host> --username <bigip username> --ucs-passphrase <passphrase> --output <ucs file>
+      journey download-ucs --host <bigip_host> --username <bigip_username> --ucs-passphrase <passphrase> --output <ucs_file>
       ```
    >IMPORTANT: For security reasons, generated UCS archive should be encrypted with a passphrase.
 
 #### Starting the VELOS migration journey
    ```
-   journey start <ucs file> --ucs-passphrase <passphrase>
+   journey start <ucs_file> --ucs-passphrase <passphrase>
    ```
    After the command is run, the tool extracts the UCS file, parses the configuration, searches for any issues inside and returns information about them.
 
@@ -289,9 +288,9 @@ This can be done either manually or using Journeys command `journey download-ucs
 
    It is also possible to pass an AS3 declaration in addition to the UCS.
    ```
-   journey start <ucs file> --ucs-passphrase <passphrase> --as3-path <as3 declaration>
+   journey start <ucs_file> --ucs-passphrase <passphrase> --as3-path <as3_declaration>
    ```
-   The tool will track any changes made to the configuration by resolving the issues and mirror them in the AS3 declaration.
+   The tool tracks any changes made to the configuration by resolving the issues and then mirrors them into the AS3 declaration.
 
    >WARNING: Vlans, trunks and vlan-groups may uniquely identify virtual servers.
 
@@ -341,7 +340,7 @@ This can be done either manually or using Journeys command `journey download-ucs
          journey show F5_Recommended_TRUNK_delete_objects
          ```
 
-         The output shows all changes ("-" stands for line removal, +" stands for line insertion).
+         The output shows all changes ("-" stands for line removal, "+" stands for line insertion).
 
          ```
          commit 46769f75963de9c7a1d1aac30f4dc74f11e6627a
@@ -399,36 +398,36 @@ This can be done either manually or using Journeys command `journey download-ucs
          ```
       1. **Repeat until no more issues appear** - from the `journey resolve` step.
       </details>
-   1. **Resolve all issues automatically** - apply all of the F5 recommended changes to your configuration files.
+   1. **Resolve all issues automatically** - apply all the F5 recommended changes to your configuration files.
       ```
       journey resolve-all
       ```
-      After this command is run, Journeys will go through all of the issues and pick F5 recommended resolutions, applying them sequentially to the configuration files. Details about applied changes can be reviewed by generating one of available reports.
+      After this command is run, Journeys will go through all the issues and pick F5 recommended resolutions, applying them sequentially to the configuration files. Details on applied changes can be reviewed by generating one of available reports.
 
 #### Switching to fixup module (optional)
    After all issues are resolved, it is possible to switch to the `fixup` module using following command:
    ```
    journey switch --module fixup
    ```
-   Issues are resolved in a similar way as in the VELOS compatibility module.
-   > NOTE: Due to high impact of changes introduced by the fixup module, `journey resolve-all` command does not work.
+   Issues are resolved in the same way as in the VELOS compatibility module.
+   > NOTE: Due to a high impact of changes introduced by the fixup module, `journey resolve-all` command does not work.
 
 
 #### Generating updated VELOS-ready configuration file
-   Once all issues are resolved, the following command will generate an output UCS file.
+   Once all issues are resolved, the following command would generate an output UCS file.
    > NOTE: While the resulting file will have entries fixed for VELOS feature parity, UCS version will still be the same as the source BIG-IP one.
    ```
    journey generate --output <output_ucs_name> --ucs-passphrase <passphrase>
    ```
 ##### AS3 support
 
-   If an AS3 declaration was provided to the start method, you can also rename the output as3 json file.
+   If an AS3 declaration was provided to the start method, you would also be able to rename the output as3 json file:
    ```
    journey generate --output <output_ucs_name> --ucs-passphrase <passphrase> --output-as3 <output_as3_name>
    ```
 
 #### Resources
-   Before deploying the UCS, the user may check if the Destination System has enough system resources to load the configuration.
+   Before deploying the UCS, you may check if the Destination System has enough system resources to have the configuration loaded.
    Application leverages the `mprov.pl` internal script, which verifies if all BIG-IP modules residing in the bigip_base.conf file from the Source System UCS can be provisioned on the given Destination System. During the check, the script verifies required CPU, Disk and RAM usage of the used BIG-IP modules.
 
    If you are running Journeys in an environment with connectivity to the Destination System,
@@ -455,7 +454,7 @@ To deploy your VELOS-ready UCS configuration manually, please upload the generat
 ```
 tmsh load sys ucs <output_ucs_name> platform-migrate no-license keep-current-management-ip passphrase <passphrase>
 ```
-Once the UCS is loaded, you can follow steps described in the [article K42161405](https://support.f5.com/csp/article/K42161405#Removing%20the%20devices%20from%20the%20group%20and%20deleting%20the%20trust) to rebuild the device trust for a group of BIG-IP devices configured in an HA device group via Configuration utility or [K40832524](https://support.f5.com/csp/article/K40832524#proc_2) via tmsh.
+Once the UCS is loaded, you can follow the steps described in the [article K42161405](https://support.f5.com/csp/article/K42161405#Removing%20the%20devices%20from%20the%20group%20and%20deleting%20the%20trust) to rebuild the device trust for a group of BIG-IP devices configured in an HA device group via Configuration utility or [K40832524](https://support.f5.com/csp/article/K40832524#proc_2) via tmsh.
 
 > WARNING: System reboot might be required for all changes to take effect after loading
 > new configuration. This will be indicated on the Destination System with a status
@@ -482,11 +481,11 @@ journey deploy-as3 --input-as3 <as3_declaration> --destination-host <ip_or_fqdn>
 During the deployment process, Journeys will automatically create a backup UCS on the Destination System. The file will be named as `auto_backup_from_%Y%m%d%H%M%S.ucs`
 
 #### Diagnostics
-After loading the UCS to the Destination System, you can run a diagnose function that collects information relevant to your system condition and compares its state and configuration with the Source BIG-IP System.
+After loading the UCS to the Destination System, you can run the `diagnose` function that collects information relevant to your system condition and compares its state and configuration with the Source BIG-IP System.
    ```
    journey diagnose --source-host <ip_or_fqdn> --destination-host <ip_or_fqdn>
    ```
-To skip desired diagnose methods, use option `--exclude-checks <JSON_list_of_checks_to_skip>`.
+To skip desired diagnosis methods, use option `--exclude-checks <JSON_list_of_checks_to_skip>`.
 Please note, that some methods just gather data and require user's evaluation.
 
 <details>
@@ -557,7 +556,7 @@ Please note, that some methods just gather data and require user's evaluation.
    -----|-----
 
    Log watcher check runs only together with UCS deployment to the Destination Platform using
-   `journey deploy <attributes...>`. This check looks for "ERR" and "CRIT" phrases (case insensitive) that might appear in logs during UCS deployment. Current scope of log file lookup:
+   `journey deploy <attributes...>`. This check looks for "ERR" and "CRIT" phrases (case-insensitive) that might appear in logs during UCS deployment. Current scope of log file lookup:
    - /var/log/ltm"
    - /var/log/apm"
    - /var/log/gtm"
@@ -572,7 +571,7 @@ Please note, that some methods just gather data and require user's evaluation.
    - /var/log/kern.log
    - /var/log/messages
 
-   If you see log watcher output includes only some of these files, it means rest of them does not appear on your system (they may be not provisioned).
+   The log watcher output only includes these files, which appear on your system and are provisioned.
    Sample output:
    ```json
    Log watcher output:
@@ -580,16 +579,16 @@ Please note, that some methods just gather data and require user's evaluation.
       "/var/log/ltm": [],
    }
    ```
-   Empty list as a value means no lines containing "ERR" and "CRIT" phrases were found, there still may be any information about potential problems in logs.
-   Therefore this check requires manual evaluation.
+   Empty list as a value means no lines containing phrases "ERR" and "CRIT" were found. However, there may be information about potential problems in logs.
+   Therefore, this check requires manual evaluation.
 </details>
 
 ### Extras
 
 #### Session management
-   Journeys allows users to work on multiple migrations in parallel using sessions. By default, the application will use only one, named `default_session` - as can be seen in the working directory after starting Journeys.
+   Journeys allows working on multiple migrations in parallel by separating workflows into sessions, each one having its data stored in a different directory inside the workdir. Default session name: `default_session`.
 
-   To manage more sessions, you can leverage the `sessions` command group.
+   To manage more sessions, leverage the `sessions` command group.
 
    * `journey sessions --help` - List help concerning sessions
    * `journey sessions list` - List all created sessions
@@ -604,8 +603,8 @@ Please note, that some methods just gather data and require user's evaluation.
 ### Bug reporting
 
 Let us know if something went wrong. By reporting issues, you support development of this project and get a chance of having it fixed soon.
-Please use bug template available [here](https://github.com/f5devcentral/f5-bigip-journeys-app/issues/new?assignees=&labels=&template=bug_report.md&title=%5BBUG%5D)
+Please use bug template available [here](https://github.com/f5devcentral/f5-journeys/issues/new?assignees=&labels=&template=bug_report.md&title=%5BBUG%5D) and attach the journeys.log file from the working directory (`/tmp/journeys` by default)
 
 ### Feature requests
 
-Ideas for enhancements are welcome [here](https://github.com/f5devcentral/f5-bigip-journeys-app/issues/new?assignees=&labels=&template=feature_request.md&title=%5BFEAT%5D)
+Ideas for enhancements are welcome [here](https://github.com/f5devcentral/f5-journeys/issues/new?assignees=&labels=&template=feature_request.md&title=%5BFEAT%5D)
