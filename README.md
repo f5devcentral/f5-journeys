@@ -120,7 +120,9 @@ Mandatory steps before running Journeys:
 
 1. **Destination System preparation for Journeys**
    1. Destination VELOS BIG-IP VM tenant should be deployed and configured on the chassis partition
-   1. VLANs, trunks and interfaces should already be configured and assigned to other VM Tenant (on the chassis partition level)
+   1. VLANs, trunks and interfaces should already be configured and assigned to the VM tenant (on the chassis partition level).
+      For more details, please refer to:
+      - [Platform-migrate option overview: K82540512](https://support.f5.com/csp/article/K82540512#p1)
 
 ### BIG-IP account prerequisites
 To ensure all Journeys features work properly, an account with Administrator role and advanced shell (bash) access is
@@ -133,9 +135,7 @@ for migration might be desired.
 ## Configuration Migration Considerations
 
 ### BIG-IP device swap
-To minimize downtime, F5 recommends deploying the new VELOS hardware alongside existing BIG-IP deployment. By default, config created by Journeys will
-have interfaces removed from VLANs, to prevent conflicts of IP addresses when deployed in the same network. It is possible to turn that off by
-choosing `ignore` in the issue resolution for `InterfaceShutdown`.
+To minimize downtime, F5 recommends deploying the new VELOS hardware alongside existing BIG-IP deployment.
 
 F5 recommends the following procedure for moving production traffic to a new device:
 
