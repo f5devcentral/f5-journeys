@@ -2,10 +2,7 @@
 version: "2"
 services:
   journeys:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: journeys:compose
+    image: f5devcentral/f5-bigip-journeys-app:v1.1.3
     environment:
       - JOURNEYS_PORT=${JOURNEYS_PORT}
       - MIGRATE_DIR=${MIGRATE_DIR}
@@ -24,7 +21,7 @@ services:
       - "6379:6379"
 
   celery-worker:
-    image: journeys:compose
+    image: f5devcentral/f5-bigip-journeys-app:v1.1.3
     command: celery -A journeys.backend worker -l debug
     environment:
       - BROKER_URL=${BROKER_URL}
