@@ -42,6 +42,8 @@ This module finds the following configuration elements in the source configurati
 + **VlanGroup** - on VELOS [vlan-groups](https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-tmos-routing-administration-14-1-0/vlans-vlan-groups-and-vxlan.html) cannot be defined on the BIG-IP level.
 + **VLANMACassignment** - solves an issue with mac assignment set to `vmw-compat` that can happen when migrating from a BIG-IP Virtual Edition.
 + **WildcardWhitelist** - a part of sPVA - extended-entries field in network-whitelist objects is not supported.
++ **AAM** - Application Acceleration Manager is not supported on VELOS platform.
+
 
 > WARNING: Migration from BIG-IP systems with a physical FIPS card to VELOS VM tenants is not supported yet.
 
