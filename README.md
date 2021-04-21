@@ -25,6 +25,7 @@ Supported features:
 + Addressing selected BIG-IP upgrade problems automatically (fixup module)
 + Deployment of the updated configuration to a VELOS VM tenant
 + Post-migration diagnostics
++ Generating detailed PDF reports at every stage of the journey
 
 ### VELOS compatibility module
 This module finds the following configuration elements in the source configuration, that are no longer supported by the BIG-IP running on the VELOS platform. There will be a few solutions provided, for every incompatible element found, to be chosen from.
@@ -39,7 +40,10 @@ This module finds the following configuration elements in the source configurati
 + **TRUNK** - on VELOS Trunks cannot be defined on the BIG-IP level.
 + **VirtualWire** - the [virtual-wire feature](https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/big-ip-system-configuring-for-layer-2-transparency-14-0-0/01.html) is not supported on VELOS systems.
 + **VlanGroup** - on VELOS [vlan-groups](https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-tmos-routing-administration-14-1-0/vlans-vlan-groups-and-vxlan.html) cannot be defined on the BIG-IP level.
++ **VLANMACassignment** - solves an issue with mac assignment set to `vmw-compat` that can happen when migrating from a BIG-IP Virtual Edition.
 + **WildcardWhitelist** - a part of sPVA - extended-entries field in network-whitelist objects is not supported.
++ **AAM** - Application Acceleration Manager is not supported on VELOS platform.
+
 
 > WARNING: Migration from BIG-IP systems with a physical FIPS card to VELOS VM tenants is not supported yet.
 
@@ -57,8 +61,7 @@ This module finds the following configuration elements in the source configurati
 
 ### Fixup module
 The module finds issues that might occur during specific upgrades between BIG-IP versions or migrations between specific platforms. This feature will be extended over time with new fixes.
-Available fixups:
-+ **VLANMACassignment** - solves an issue with mac assignment set to `vmw-compat` that can happen when migrating from a BIG-IP Virtual Edition.
+Currently there are no fixups implemented [to be delivered].
 
 ----
 ## BIG-IP Prerequisites
@@ -140,10 +143,24 @@ To minimize downtime, F5 recommends deploying the new VELOS hardware alongside e
 F5 recommends the following procedure for moving production traffic to a new device:
 
 1. Deploy the VELOS device, trying to keep physical connections as close as possible to the old BIG-IP (respective interfaces assigned to the same physical networks)
+1. Remove interfaces to existing VLANs on the new VELOS hardware (this will impact **all** tenants on VELOS).
+   <br/>There are three options to do this:
+    1.  Disabling interfaces on the VELOS chassis.
+    1.  Physically unplugging the network cables on VELOS platform.
+    1.  Disable the port on the switch connected to the VELOS platform.
 1. Deploy Journeys-generated config to a new BIG-IP. Note that some validators like LTM module comparison are expected to fail as Virtual Servers will be down, therefore it's recommended to use CLI command `journey deploy` and run validators in step 5. or deselect `LTM VS check`
-1. If the configuration was deployed successfully, review system status. If the status is "REBOOT REQUIRED", perform the reboot before shutting down interfaces on the old BIG-IP system.
-1. Shutdown interfaces on the old BIG-IP system.
-1. Re-add interfaces to existing VLANs on the new VELOS hardware.
+1. If the configuration was deployed successfully, review the system status. If the status is "REBOOT REQUIRED", perform the reboot before shutting down interfaces on the old BIG-IP system.
+1. If you use BIG-IQ, refer to the [article K15938](https://support.f5.com/csp/article/K15938) to discover your new BIG-IP device.
+1. Shutdown interfaces on the old BIG-IP system (this will impact **all** source BIG-IPs). 
+   <br/>There are three options to do this:
+    1. Disabling interfaces on old BIG-IP system.
+    1. Physically unplugging the network cables on old BIG-IP system.
+    1. Disable the port on the switch connected to the old BIG-IP system.
+1. Re-add interfaces to existing VLANs on the new VELOS hardware (this will impact **all** tenants on VELOS).
+    <br/>There are three options to do this:
+    1. Re-enable interfaces on the VELOS chassis.
+    1. Physically unplug the network cables on the source platform, plug the network cables on the VELOS platform.
+    1. Enable the port on the switch connected to the VELOS platform.
 1. Run validators with the `journey diagnose` command.
 
 ### SPDAG/VlanGroup mitigation
@@ -252,7 +269,7 @@ Otherwise, you can download the modified configuration file (and AS3 declaration
 
 To deploy your VELOS-ready UCS configuration manually, please upload the generated output to `/var/local/ucs/` on the Destination System and run:
 ```
-tmsh load sys ucs <output_ucs_name> platform-migrate no-license keep-current-management-ip passphrase <passphrase>
+tmsh load sys ucs <output_ucs_name> platform-migrate no-license keep-current-management-ip reset-trust passphrase <passphrase>
 ```
 
 ![](media/gui_screenshot_7_journey_summary.png)
@@ -412,6 +429,9 @@ This can be done either manually or using Journeys command `journey download-ucs
    Issues are resolved in the same way as in the VELOS compatibility module.
    > NOTE: Due to a high impact of changes introduced by the fixup module, `journey resolve-all` command does not work.
 
+   > NOTE: In Journeys version 1.1.3, fixup items are moved and displayed in VELOS compatibility module. They can be automatically resolved with `journey resolve-all` command.
+
+
 
 #### Generating updated VELOS-ready configuration file
    Once all issues are resolved, the following command would generate an output UCS file.
@@ -452,7 +472,7 @@ journey deploy --input-ucs <ucs> --ucs-passphrase <ucs_passphrase> --destination
 
 To deploy your VELOS-ready UCS configuration manually, please upload the generated output to `/var/local/ucs/` on the Destination System and run:
 ```
-tmsh load sys ucs <output_ucs_name> platform-migrate no-license keep-current-management-ip passphrase <passphrase>
+tmsh load sys ucs <output_ucs_name> platform-migrate no-license keep-current-management-ip reset-trust passphrase <passphrase>
 ```
 Once the UCS is loaded, you can follow the steps described in the [article K42161405](https://support.f5.com/csp/article/K42161405#Removing%20the%20devices%20from%20the%20group%20and%20deleting%20the%20trust) to rebuild the device trust for a group of BIG-IP devices configured in an HA device group via Configuration utility or [K40832524](https://support.f5.com/csp/article/K40832524#proc_2) via tmsh.
 
