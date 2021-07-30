@@ -21,7 +21,7 @@ services:
       - "6379:6379"
 
   celery-worker:
-    image: f5devcentral/f5-bigip-journeys-app:v1.1.3
+    image: artifactory.f5net.com/f5-cxt-docker/f5-bigip-journeys-app:2.0.0-develop.4167b02b
     command: celery -A journeys.backend worker -l debug
     environment:
       - BROKER_URL=${BROKER_URL}
