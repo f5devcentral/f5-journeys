@@ -1,9 +1,21 @@
 # This file is an experimental new feature, thus might not work in external environment outside of F5 network.
 version: "2"
 services:
-  journeys:
-    image: f5devcentral/f5-bigip-journeys-app:v2.0.1
+  acc-api:
+    image: f5devcentral/f5-as3-config-converter:1.15.0
     environment:
+      - ACC_API_PORT=${ACC_API_PORT}
+    ports:
+      - "127.0.0.1:${ACC_API_PORT}:8080"
+    restart: unless-stopped
+    command: serve
+    tmpfs: /tmp
+
+  journeys:
+    image: f5devcentral/f5-bigip-journeys-app:v3.0.0
+    environment:
+      - ACC_API_PORT=${ACC_API_PORT}
+      - ACC_API_HOST=acc-api
       - JOURNEYS_PORT=${JOURNEYS_PORT}
       - MIGRATE_DIR=${MIGRATE_DIR}
       - BROKER_URL=${BROKER_URL}
@@ -12,6 +24,8 @@ services:
 
     ports:
       - "127.0.0.1:${JOURNEYS_PORT}:443"
+    depends_on:
+      - acc-api
     volumes:
       - "${WORKING_DIRECTORY}:${MIGRATE_DIR}"
 
@@ -21,7 +35,7 @@ services:
       - "6379:6379"
 
   celery-worker:
-    image: f5devcentral/f5-bigip-journeys-app:v2.0.1
+    image: f5devcentral/f5-bigip-journeys-app:v3.0.0
     command: celery -A journeys.backend worker -l debug
     environment:
       - BROKER_URL=${BROKER_URL}
@@ -30,3 +44,4 @@ services:
     depends_on:
       - journeys
       - redis
+

@@ -3,7 +3,8 @@
 ----
 ## Contents:
 - [Description](#description)
-- [BIG-IP Prerequisites](#big-ip-prerequisites)
+- [Journey: Full config migration](#journey-full-config-migration)
+- [Journey: Application Service migration](#journey-application-service-migration)
 - [Configuration Migration Considerations](#configuration-migration-considerations)
 - [Journeys Setup Requirements](#journeys-setup-requirements)
 - [Usage](#usage)
@@ -15,21 +16,55 @@
 Journeys is an application designed to assist F5 Customers with migrating a BIG-IP configuration to a new F5 device and enable new ways of migrating.
 
 Supported journeys:
-+ Migration to VELOS - migrating a BIG-IP configuration from any version from 11.5.0 to one running on the VELOS platform
-+ Per-App migration - migrating mission critical Applications and their dependencies to a new AS3 configuration and deploying it to a BIG-IP instance of choice (coming soon)
-+ Non-VELOS migration - migrating a BIG-IP configuration to a new non-VELOS platform, e.g. iSeries (coming soon)
++ Full Config migration - migrating a BIG-IP configuration from any version starting at 11.5.0 to a higher one, including VELOS systems.
++ Application Service migration - migrating mission critical Applications and their dependencies to a new AS3 configuration and deploying it to a BIG-IP instance of choice.
 
-## Journey: Migration to VELOS
+## Journey: Full Config migration
 Supported features:
-+ UCS or UCS+AS3 source configurations
++ Loading UCS or UCS+AS3 source configurations
 + Flagging source configuration feature parity gaps and fixing them with provided built-in solutions
-+ Deployment of the updated configuration to a VELOS VM tenant
++ Load validation
++ Deployment of the updated configuration to a destination device, including VELOS VM tenants
 + Post-migration diagnostics
-<!-- + Load validation -->
 + Generating detailed PDF reports at every stage of the journey
 
-### Known VELOS parity gaps
-Journeys finds the following configuration elements in the source configuration, that are no longer supported by the BIG-IP running on the VELOS platform. For every incompatible element found, there will be one or more automatic possible solutions provided.
+Full config non-VELOS BIG-IP migrations are supported for software paths according to the following matrix:
+
+|                 |          |         |         |   DEST  |         |         |         |
+| ----------------| -------- |-------- |-------- |---------|-------- |-------- |-------- |
+|                 |**X**     |**11.x** |**12.x** |**13.x** |**14.x** |**15.x** |**16.x** |
+|                 | **<11.5**|  **X**  |  **X**  |  **X**  |  **X^** |  **X^** |         |
+|                 | **12.x** |         |  **X**  |  **X**  |  **X**  |  **X^** |         |   
+|      **SRC**    | **13.x** |         |         |  **X**  |  **X**  |  **X**  |         | 
+|                 | **14.x** |         |         |         |  **X**  |  **X**  |  **X**  |
+|                 | **15.x** |         |         |         |         |  **X**  |  **X**  |
+|                 | **16.x** |         |         |         |         |         |  **X**  |
+
+
+**X^** - an exception compared to the supported upgrade paths listed in the official document [K13845](https://support.f5.com/csp/article/K13845) (upgrade allowed only if the source configuration is upgraded to the latest available maintenance release).
+
+
+> WARNING: Migrating Application Services using keys stored in FIPS cards is not supported at the moment, unless the user can restore the FIPS keys with the original (non-fips) ones on the destination platform.
+
+### Known parity gaps
+Journeys finds the following configuration elements in the source configuration, which are no longer supported by the BIG-IP running on the destination platform. For every incompatible element found, there will be one or more automatic possible solutions provided.
+
+#### Common issues
+
++ **Syslog** - solves [syslog configuration parsing error](https://support.f5.com/csp/article/K96275603) possible during an upgrade to a destination BIGIP with version 13.1.0 or higher
+   <details><summary>Details</summary>
+   
+   * Journeys issue ID: Syslog
+   * Available mitigations:
+      * (**default**) Adjust `sys syslog` configuration depending on source version 
+        * Change all characters `[` to `\\[` in field `include` (source version 12.1.5 or higher)
+        * Change all characters `[` to `\\\\[` in field `include` (source version lower than 12.1.5)
+      
+      * Delete unsupported object
+         * Remove  `sys syslog` object containing improperly escaped `[` in section `include`
+
+   </details>
+#### Velos specific issues
 + **AAM** - Application Acceleration Manager is not supported on VELOS platform.
    <details><summary>Details</summary>
    
@@ -201,25 +236,22 @@ Journeys finds the following configuration elements in the source configuration,
          * Remove any `security network-whitelist` objects containing an `extended-entries` key
    </details>
 
-
-> WARNING: Migration from BIG-IP systems with a physical FIPS card to VELOS VM tenants is not supported yet.
-
 **Journeys does not support** feature parity gaps that:
 
 + Reside outside a UCS archive to be migrated, e.g. in a host UCS (not in a guest UCS):
     + Crypto/Compression Guest Isolation - Dedicated/Shared SSL-mode for guests is not supported on VELOS. [Feature details.](https://support.f5.com/csp/article/K22363295)
     + Traffic Rate Limiting (affects vCMP guests only) - assigning a traffic profile for vcmp guests is currently not supported on a VELOS tenant.
 
-+ Do not cause any config load failures:
++ Do not cause any config load failures on VELOS:
 
     + [Secure Vault](https://support.f5.com/csp/article/K73034260) - keys will be instead stored on the tenant file system.
     + Several sPVA features which do not support hardware processing, where software support will occur instead (DDoS HW Vectors (Device and VS), Device/VS Block List, Device Vector Bad Actor (Greylist))
     + Wildcard SYN cookie protection - as above, software processing will replace hardware one.
 
 ----
-## BIG-IP Prerequisites
+### BIG-IP Prerequisites
 
-Mandatory steps before running Journeys:
+Mandatory steps before running Full Config migration in Journeys:
 
 1. **Master key transfer** - to allow handling encrypted objects, before running Journeys, you need to set a device master key password on both Source and Destination Systems. There are two ways to do this:
 
@@ -274,18 +306,59 @@ Mandatory steps before running Journeys:
       - K13454: Configuring SSH public key authentication on BIG-IP systems (11.x - 15.x)
       https://support.f5.com/csp/article/K13454
 
-1. **Destination System preparation for Journeys**
+1. **VELOS Destination System preparation for Journeys**
    1. Destination VELOS BIG-IP VM tenant should be deployed and configured on the chassis partition
    1. VLANs, trunks and interfaces should already be configured and assigned to the VM tenant (on the chassis partition level).
       For more details, please refer to:
       - [Platform-migrate option overview: K82540512](https://support.f5.com/csp/article/K82540512#p1)
 
-### BIG-IP account prerequisites
+#### BIG-IP account prerequisites
 To ensure all Journeys features work properly, an account with Administrator role and advanced shell (bash) access is
 required on both source and target hosts. It can be `root` or any other account. For auditing purposes, a separate account
 for migration might be desired.
 
  > IMPORTANT: Due to the above, certain features of Journeys - specifically the ones requiring ssh access to the machine - are not available on BIG-IPs running in the **Appliance mode**. The user will be required to perform manual variants of these steps instead.
+
+---
+## Journey: Application Service Migration
+
+Supported features:
++ Loading UCS source configurations.
++ Grouping Virtuals into Applications and Tenants, basing on internal dependencies and set preferences.
++ Configuration editor for Virtuals with an easy access to updated AS3 conversion previews.
++ Converting selected applications into a deployable AS3 declaration using [f5-as3-config-converter](https://github.com/f5devcentral/f5-as3-config-converter/).
++ Deployment of the updated configuration to a specified destination device via AS3.
++ Post-migration diagnostics.
+
+### Configuration object grouping
+
+1. **Virtual** - smallest object recognized by Journeys. It includes a single `ltm virtual-server` (represented by a Service in AS3) object and any others referenced by it directly or indirectly - monitors, pools, profiles, etc.
+
+2. **Application** - A group of AS3 objects, including the virtual mentioned above. Logic for initial grouping of virtuals into apps can be manually set via preferences in GUI before loading the ucs. Represented by `folders` on the BIG-IP level.
+
+3. **Tenant** - A group of AS3 applications. By default Journeys creates one tenant per application. `Common` is a special reserved name, represeting objects shared between tenants. Represented by `partitions` on the BIG-IP level.
+
+### Application conversion status
+Each virtual separately gets assigned a status based on the f5-as3-config-converter response. Possible statuses are as follows:
+
+* Green - All virtual objects appear to convert properly.
+* Red - Virtual configuration includes some objects that are currently marked as `unsupported` by f5-acc-config-converter, and are considered undeployable.
+* Black - Error during a virtual config conversion attempt.
+
+> Note: If one or more of your apps have a black status, you may attempt to use a newer version of f5-acc-config-converter by editing the image version inside the `docker-compose.yml` file. Otherwise, please open an issue and include configuration contents from the problematic app.
+
+### Additional notes
+
+#### Deployable objects
+Not all required configuration files can be included inside the resulting AS3 json, and need to be installed on the Destination System prior to sending the declaration itself. 
+
+If deploying manually, Journeys will prepare a package containing all of the required files alongside with a list of commands to perform on the Destination System.
+
+If deploying via Journeys, the application will install the files automatically.
+
+#### Known issues
+
+* Journeys does not support keys generated using a physical FIPS card. If there are any applications referring to these keys, deployment of them will fail.
 
 ----
 ## Configuration Migration Considerations
@@ -339,15 +412,30 @@ cd f5-journeys
    You can use any directory in place of `/tmp/journeys`. 
    ```
    mkdir /tmp/journeys
-   cp <ucs_file> /tmp/journeys
    ```
-   > Note: keep in mind that the default migration directory is placed in the `/tmp` directory, which is cleaned up upon a system reboot. If longer session persistence is required, please modify this directory path to a non-temporary one.
+   > Note: keep in mind that the default migration directory is placed in the `/tmp` directory, which is cleaned up upon a system reboot. If longer session persistence is required, please modify this directory path via the .env file to a non-temporary one.
 
 1. Prepare an environment file for docker-compose
    ```
    cp sample.env .env
    ```
    If you are using a different working directory than the one shown in the point above, `WORKING_DIRECTORY` variable has to be updated in the `.env` file
+
+1. Fetch services included in the docker-compose configuration file
+   ```
+   docker-compose pull
+   ```
+
+1. Print sha digest of downloaded images
+   ```
+   docker image ls f5devcentral/f5-bigip-journeys-app --digests
+   ```
+
+1. Examine if image listed in docker-compose journeys/celery-worker has exactly the same digest that can be found on docker hub repository with the same tag
+   ```
+   https://hub.docker.com/r/f5devcentral/f5-bigip-journeys-app/tags?page=1&ordering=last_updated
+   ```
+   > Note: do not use the application if digests does not match.
 
 1. Start services included in the docker-compose configuration file
    ```
@@ -359,7 +447,11 @@ cd f5-journeys
    ```
    https://localhost:8443
    ```
-   and accept self-signed cert to run the application.
+   and accept self-signed cert to run the application. The certificate itself can be verified by comparing it with the one logged by the main journeys container.
+   ```
+   docker logs f5-journeys_journeys_1 2>&1 | grep 'BEGIN CERTIFICATE'
+   ```
+
 
 
 
@@ -499,11 +591,16 @@ Details of the diagnostic checks can be evaluated in a resulting pdf report.
 
 </details>
 
-<!--- ### Load validation
+### Load validation
 
-At certain points during the migration process, user might be given an option to validate configuration load on a provided Destination System. This operation utilizes the built in `tmsh sys config verify` functionality to check whether BIG-IP recognizes any errors in the provided files.
+During the migration process, user will be provided with an option to validate if the configuration being migrated will load on the provided Destination System. This operation utilizes the BIG-IP built in `tmsh sys config verify` functionality to check whether the Destination BIG-IP finds any errors in the provided files.
+This module temporarily modifies Destination configuration files for testing purposes. After moving on from this step, the Destination System will be reverted back to its original state.
 
 > WARNING: Due to how `tmsh sys config verify` works, the load validation module has to temporarily heavily modify configuration files on the provided Destination System. For this reason, to avoid any potential loss of data, it is _not_ recommended to use this feature with a device already containing any non-basic configuration.
+
+> WARNING: Please make sure the Destination device is licensed and provisioned with modules corresponding to the UCS configuration being migrated.
+
+> WARNING: Load validation can produce false positive output if the configuration contains any parts subject to fix-up scripts built into the BIG-IP ucs load process. These fix-ups cannot be automatically incorporated in the validation module.
 
 <details>
 <summary>Load validation functional details</summary>
@@ -521,16 +618,18 @@ Since the `verify` command requires an unpacked and ready to load configuration 
    * Certificates and keys
    * Database files
 1. If the migration includes an AS3 file, check and potentially install the appsvcs package
-1. Call the `tmsh load sys config verify` command on all partitions and check its output. Additionally, verify whether mcpd is not down after this operation
-1. If the migration includes an AS3 file, send a request with the provided declaration having its action set as `dry-run` and verify the output
+1. Call the `tmsh load sys config verify partitions all` command and check its output. 
+Additionally, verify whether mcpd is in correct state after this operation.
+1. If the migration includes an AS3 file, send a request with modified declaration having its action set as `dry-run` and verify the output
+   * if declaration is AS3 format then only action is changed to `dry-run`
+   * if declaration is ADC then AS3 section is added with action `dry-run` and other required settings
+   https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/userguide/composing-a-declaration.html
 
 After the validation is complete, the test host is then restored to the original state:
 1. Restore the backup ucs
 1. Remove any files that were extracted from the verified UCS file, but were not present originally on the system
-1. Remove the test UCS --->
+1. Remove the test UCS
 
-<!--- TODO: How exactly are results provided to the user? --->
-<!--- TODO: Check when cleanup is called on GUI. If it's not performed automatically after the validation itself, update this with a warning --->
 
 </details>
 
