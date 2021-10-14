@@ -1,4 +1,4 @@
-# Journeys - BIG-IP upgrade and migration utility
+# JOURNEYS - BIG-IP upgrade and migration utility
 
 ----
 ## Contents:
@@ -6,14 +6,14 @@
 - [Journey: Full config migration](#journey-full-config-migration)
 - [Journey: Application Service migration](#journey-application-service-migration)
 - [Configuration Migration Considerations](#configuration-migration-considerations)
-- [Journeys Setup Requirements](#journeys-setup-requirements)
+- [JOURNEYS Setup Requirements](#journeys-setup-requirements)
 - [Usage](#usage)
 - [Feature Details](#feature-details)
 - [Contributing](#contributing)
 
 ----
 ## Description
-Journeys is an application designed to assist F5 Customers with migrating a BIG-IP configuration to a new F5 device and enable new ways of migrating.
+JOURNEYS is an application designed to assist F5 Customers with migrating a BIG-IP configuration to a new F5 device and enable new ways of migrating.
 
 Supported journeys:
 + Full Config migration - migrating a BIG-IP configuration from any version starting at 11.5.0 to a higher one, including VELOS systems.
@@ -47,14 +47,14 @@ Full config non-VELOS BIG-IP migrations are supported for software paths accordi
 > WARNING: Migrating Application Services using keys stored in FIPS cards is not supported at the moment, unless the user can restore the FIPS keys with the original (non-fips) ones on the destination platform.
 
 ### Known parity gaps
-Journeys finds the following configuration elements in the source configuration, which are no longer supported by the BIG-IP running on the destination platform. For every incompatible element found, there will be one or more automatic possible solutions provided.
+JOURNEYS finds the following configuration elements in the source configuration, which are no longer supported by the BIG-IP running on the destination platform. For every incompatible element found, there will be one or more automatic possible solutions provided.
 
 #### Common issues
 
-+ **Syslog** - solves [syslog configuration parsing error](https://support.f5.com/csp/article/K96275603) possible during an upgrade to a destination BIGIP with version 13.1.0 or higher
++ **Syslog** - solves [syslog configuration parsing error](https://support.f5.com/csp/article/K96275603) possible during an upgrade to a destination BIG-IP with version 13.1.0 or higher
    <details><summary>Details</summary>
    
-   * Journeys issue ID: Syslog
+   * JOURNEYS issue ID: Syslog
    * Available mitigations:
       * (**default**) Adjust `sys syslog` configuration depending on source version 
         * Change all characters `[` to `\\[` in field `include` (source version 12.1.5 or higher)
@@ -68,19 +68,19 @@ Journeys finds the following configuration elements in the source configuration,
 + **AAM** - Application Acceleration Manager is not supported on VELOS platform.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: AAM
-   * Fixed in VELOS BIG-IP ver.: N/A
+   * JOURNEYS issue ID: AAM
+   * Affected VELOS BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Find any `ltm policy` objects used in virtuals used inside `wam applications`. Remove policies which contain a `wam enable` clause
          * In the same virtuals, remove any profiles of type `web-acceleration`
          * Deprovision the `am` module
    </details>
-+ **CGNAT** - VELOS platform currently does not support [Carrier Grade NAT](https://techdocs.f5.com/en-us/bigip-15-0-0/big-ip-cgnat-implementations.html) configuration.
++ **CGNAT** - VELOS platform does not support [Carrier Grade NAT](https://techdocs.f5.com/en-us/bigip-15-0-0/big-ip-cgnat-implementations.html) configuration.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: CGNAT
-   * Fixed in VELOS BIG-IP ver.: 15
+   * JOURNEYS issue ID: CGNAT
+   * Affected VELOS BIG-IP versions: 14.1.x
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any of the following configuration objects: `ltm lsn-pool`, `ltm profile pcp`, `ltm virtual` with `lsn` type and any references to them
@@ -89,8 +89,8 @@ Journeys finds the following configuration elements in the source configuration,
 + **ClassOfService** - the CoS feature is not supported on the VELOS platform.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: ClassOfService
-   * Fixed in VELOS BIG-IP ver.: N/A
+   * JOURNEYS issue ID: ClassOfService
+   * Affected VELOS BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any of the following configuration objects: `net cos`
@@ -98,8 +98,8 @@ Journeys finds the following configuration elements in the source configuration,
 + **CompatibilityLevel** - determines the level of platform hardware capability for device DoS/DDoS prevention. VELOS currently supports only level 0 and 1 (the latter if software DoS processing mode is enabled). Details on the feature and the respective levels can be found [here](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-system-dos-protection-and-protocol-firewall-implementations/detecting-and-preventing-system-dos-and-ddos-attacks.html).
    <details><summary>Details</summary>
    
-   * Journeys issue ID: CompatibilityLevel
-   * Fixed in VELOS BIG-IP ver.: 15
+   * JOURNEYS issue ID: CompatibilityLevel
+   * Affected VELOS BIG-IP versions: 14.1.x
    * Available mitigations:
       * (**default**) Set the device compatibility level to 0
          * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 0
@@ -110,8 +110,8 @@ Journeys finds the following configuration elements in the source configuration,
 + **DoubleTagging** - indicates support for the IEEE 802.1QinQ standard, informally known as Double Tagging or Q-in-Q, which VELOS does not have as for now. More info on the feature can be found [here](https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-tmos-routing-administration-14-1-0/vlans-vlan-groups-and-vxlan.html).
    <details><summary>Details</summary>
    
-   * Journeys issue ID: DoubleTagging
-   * Fixed in VELOS BIG-IP ver.: N/A
+   * JOURNEYS issue ID: DoubleTagging
+   * Affected VELOS BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported parameters
          * Remove any `customer-tag` entries in `net vlan` objects
@@ -119,8 +119,8 @@ Journeys finds the following configuration elements in the source configuration,
 + **DeviceGroup** - "Device trust can cause UCS load errors on VELOS devices, and device groups are not automatically removed while using the reset-trust option. User will need to manually reconfigure HA after loading the UCS on new devices.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: DeviceGroup
-   * Fixed in VELOS BIG-IP ver.: N/A
+   * JOURNEYS issue ID: DeviceGroup
+   * Affected VELOS BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `cm device-group` configuration objects and any references to them
@@ -128,8 +128,8 @@ Journeys finds the following configuration elements in the source configuration,
 + **MGMT-DHCP** - on VELOS mgmt-dhcp configuration is handled mostly on a partition level.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: MGMT-DHCP
-   * Fixed in VELOS BIG-IP ver.: N/A
+   * JOURNEYS issue ID: MGMT-DHCP
+   * Affected VELOS BIG-IP versions: all
    * Available mitigations:
       * (**default**) Disable management DHCP
          * Set the `sys global-settings` `mgmt-dhcp` value to `disabled`
@@ -137,17 +137,17 @@ Journeys finds the following configuration elements in the source configuration,
 + **MTU** - since VELOS currently does not support jumbo frames, we have to limit mtu to 1500.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: MTU
-   * Fixed in VELOS BIG-IP ver.: N/A
+   * JOURNEYS issue ID: MTU
+   * Affected VELOS BIG-IP versions: all
    * Available mitigations:
       * (**default**) Change MTU values to the maximum allowed
          * Set any found MTU values in `net vlan` configuration objects to 1500
    </details>
-+ **PEM** - although keeping the PEM configuration in the configuration files will not cause load errors (it will be discarded when loading the UCS), as for now PEM is not functionally supported by VELOS. Journeys removes PEM elements from the configuration to avoid confusion.
++ **PEM** - although keeping the PEM configuration in the configuration files will not cause load errors (it will be discarded when loading the UCS), as for now PEM is not functionally supported by VELOS. JOURNEYS removes PEM elements from the configuration to avoid confusion.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: PEM
-   * Fixed in VELOS BIG-IP ver.: 15
+   * JOURNEYS issue ID: PEM
+   * Affected VELOS BIG-IP versions: 14.1.x
    * Available mitigations:
       * (**default**) Remove unsupported objects
          * Disable provisioning of the PEM module
@@ -157,8 +157,8 @@ Journeys finds the following configuration elements in the source configuration,
 + **RoundRobin** - Round Robin DAG configuration is not available on VELOS guest systems.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: RoundRobin
-   * Fixed in VELOS BIG-IP ver.: N/A
+   * JOURNEYS issue ID: RoundRobin
+   * Affected VELOS BIG-IP versions: all
    * Available mitigations:
       * (**default**) Remove unsupported objects
          * Remove all settings other than `dag-ipv6-prefix-len` from the `net dag-globals` configuration object
@@ -166,8 +166,8 @@ Journeys finds the following configuration elements in the source configuration,
 + **SPDAG** - [source/destination DAG](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-service-provider-generic-message-administration/generic-message-example/generic-message-example/about-dag-modes-for-bigip-scalability/sourcedestination-dag-sp-dag.html) is not supported on VELOS.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: SPDAG
-   * Fixed in VELOS BIG-IP ver.: 15
+   * JOURNEYS issue ID: SPDAG
+   * Affected VELOS BIG-IP versions: 14.1.x
    * Available mitigations:
       * (**default**) Set unsupported vlan parameters to default
          * Change `cmp-hash` values in all `net vlan` configuration objects to `default`
@@ -177,8 +177,8 @@ Journeys finds the following configuration elements in the source configuration,
 + **sPVA** - some security Packet Velocity Acceleration (PVA) features do not have hardware support on VELOS - these either must be removed or set to use software mode.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: sPVA
-   * Fixed in VELOS BIG-IP ver.: 15
+   * JOURNEYS issue ID: sPVA
+   * Affected VELOS BIG-IP versions: 14.1.x
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove `address-lists` defined in any `security dos network-whitelist` configuration objects
@@ -191,8 +191,8 @@ Journeys finds the following configuration elements in the source configuration,
 + **TRUNK** - on VELOS Trunks cannot be defined on the BIG-IP level.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: TRUNK
-   * Fixed in VELOS BIG-IP ver.: N/A
+   * JOURNEYS issue ID: TRUNK
+   * Affected VELOS BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `net trunk` configuration objects
@@ -200,8 +200,8 @@ Journeys finds the following configuration elements in the source configuration,
 + **VirtualWire** - the [virtual-wire feature](https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/big-ip-system-configuring-for-layer-2-transparency-14-0-0/01.html) is not supported on VELOS systems.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: VirtualWire
-   * Fixed in VELOS BIG-IP ver.: N/A
+   * JOURNEYS issue ID: VirtualWire
+   * Affected VELOS BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `net trunk` configuration objects
@@ -209,8 +209,8 @@ Journeys finds the following configuration elements in the source configuration,
 + **VlanGroup** - on VELOS [vlan-groups](https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-tmos-routing-administration-14-1-0/vlans-vlan-groups-and-vxlan.html) cannot be defined on the BIG-IP level.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: VlanGroup
-   * Fixed in VELOS BIG-IP ver.: N/A
+   * JOURNEYS issue ID: VlanGroup
+   * Affected VELOS BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `net vlan-group` configuration objects
@@ -218,8 +218,8 @@ Journeys finds the following configuration elements in the source configuration,
 + **VLANMACassignment** - solves an issue with mac assignment set to `vmw-compat` that can happen when migrating from a BIG-IP Virtual Edition.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: VLANMACassignment
-   * Fixed in VELOS BIG-IP ver.: N/A
+   * JOURNEYS issue ID: VLANMACassignment
+   * Affected VELOS BIG-IP versions: all
    * Available mitigations:
       * (**default**) Modify unsupported value to `unique`
          * Set the `share-single-mac` value in `ltm global-settings` and the respective BigDB database value to `unique`
@@ -229,14 +229,14 @@ Journeys finds the following configuration elements in the source configuration,
 + **WildcardWhitelist** - a part of sPVA - extended-entries field in network-whitelist objects is not supported.
    <details><summary>Details</summary>
    
-   * Journeys issue ID: WildcardWhitelist
-   * Fixed in VELOS BIG-IP ver.: 15
+   * JOURNEYS issue ID: WildcardWhitelist
+   * Affected VELOS BIG-IP versions: 14.1.x
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `security network-whitelist` objects containing an `extended-entries` key
    </details>
 
-**Journeys does not support** feature parity gaps that:
+**JOURNEYS does not support** feature parity gaps that:
 
 + Reside outside a UCS archive to be migrated, e.g. in a host UCS (not in a guest UCS):
     + Crypto/Compression Guest Isolation - Dedicated/Shared SSL-mode for guests is not supported on VELOS. [Feature details.](https://support.f5.com/csp/article/K22363295)
@@ -251,9 +251,9 @@ Journeys finds the following configuration elements in the source configuration,
 ----
 ### BIG-IP Prerequisites
 
-Mandatory steps before running Full Config migration in Journeys:
+Mandatory steps before running Full Config migration in JOURNEYS:
 
-1. **Master key transfer** - to allow handling encrypted objects, before running Journeys, you need to set a device master key password on both Source and Destination Systems. There are two ways to do this:
+1. **Master key transfer** - to allow handling encrypted objects, before running JOURNEYS, you need to set a device master key password on both Source and Destination Systems. There are two ways to do this:
 
     1. Copy the Source System master key with f5mku and re-key master key on the Destination System:
 
@@ -306,18 +306,18 @@ Mandatory steps before running Full Config migration in Journeys:
       - K13454: Configuring SSH public key authentication on BIG-IP systems (11.x - 15.x)
       https://support.f5.com/csp/article/K13454
 
-1. **VELOS Destination System preparation for Journeys**
-   1. Destination VELOS BIG-IP VM tenant should be deployed and configured on the chassis partition
-   1. VLANs, trunks and interfaces should already be configured and assigned to the VM tenant (on the chassis partition level).
+1. **Destination System preparation for JOURNEYS**
+   1. Destination BIG-IP should be in Active state.
+   1. VLANs, trunks and interfaces should already be configured on vCMP and VELOS systems.
       For more details, please refer to:
       - [Platform-migrate option overview: K82540512](https://support.f5.com/csp/article/K82540512#p1)
 
 #### BIG-IP account prerequisites
-To ensure all Journeys features work properly, an account with Administrator role and advanced shell (bash) access is
+To ensure all JOURNEYS features work properly, an account with Administrator role and advanced shell (bash) access is
 required on both source and target hosts. It can be `root` or any other account. For auditing purposes, a separate account
 for migration might be desired.
 
- > IMPORTANT: Due to the above, certain features of Journeys - specifically the ones requiring ssh access to the machine - are not available on BIG-IPs running in the **Appliance mode**. The user will be required to perform manual variants of these steps instead.
+ > IMPORTANT: Due to the above, certain features of JOURNEYS - specifically the ones requiring ssh access to the machine - are not available on BIG-IPs running in the **Appliance mode**. The user will be required to perform manual variants of these steps instead.
 
 ---
 ## Journey: Application Service Migration
@@ -332,11 +332,11 @@ Supported features:
 
 ### Configuration object grouping
 
-1. **Virtual** - smallest object recognized by Journeys. It includes a single `ltm virtual-server` (represented by a Service in AS3) object and any others referenced by it directly or indirectly - monitors, pools, profiles, etc.
+1. **Virtual** - smallest object recognized by JOURNEYS. It includes a single `ltm virtual-server` (represented by a Service in AS3) object and any others referenced by it directly or indirectly - monitors, pools, profiles, etc.
 
 2. **Application** - A group of AS3 objects, including the virtual mentioned above. Logic for initial grouping of virtuals into apps can be manually set via preferences in GUI before loading the ucs. Represented by `folders` on the BIG-IP level.
 
-3. **Tenant** - A group of AS3 applications. By default Journeys creates one tenant per application. `Common` is a special reserved name, represeting objects shared between tenants. Represented by `partitions` on the BIG-IP level.
+3. **Tenant** - A group of AS3 applications. By default JOURNEYS creates one tenant per application. `Common` is a special reserved name, represeting objects shared between tenants. Represented by `partitions` on the BIG-IP level.
 
 ### Application conversion status
 Each virtual separately gets assigned a status based on the f5-as3-config-converter response. Possible statuses are as follows:
@@ -345,61 +345,78 @@ Each virtual separately gets assigned a status based on the f5-as3-config-conver
 * Red - Virtual configuration includes some objects that are currently marked as `unsupported` by f5-acc-config-converter, and are considered undeployable.
 * Black - Error during a virtual config conversion attempt.
 
-> Note: If one or more of your apps have a black status, you may attempt to use a newer version of f5-acc-config-converter by editing the image version inside the `docker-compose.yml` file. Otherwise, please open an issue and include configuration contents from the problematic app.
+> Note: If one or more of your apps have a red or black status, you may attempt to use a newer version of f5-acc-config-converter by editing the image version inside the `docker-compose.yml` file. Otherwise, please open an issue on [f5devcentral](https://github.com/f5devcentral/f5-journeys/issues) and include configuration contents from the problematic app.
 
 ### Additional notes
 
 #### Deployable objects
 Not all required configuration files can be included inside the resulting AS3 json, and need to be installed on the Destination System prior to sending the declaration itself. 
 
-If deploying manually, Journeys will prepare a package containing all of the required files alongside with a list of commands to perform on the Destination System.
+If deploying manually, JOURNEYS will prepare a package containing all of the required files alongside with a list of commands to perform on the Destination System.
 
-If deploying via Journeys, the application will install the files automatically.
+If deploying via JOURNEYS, the application will install the files automatically.
 
 #### Known issues
 
-* Journeys does not support keys generated using a physical FIPS card. If there are any applications referring to these keys, deployment of them will fail.
+* JOURNEYS does not support keys generated using a physical FIPS card. If there are any applications referring to these keys, deployment of them will fail.
 
 ----
 ## Configuration Migration Considerations
 
 ### BIG-IP device swap
-To minimize downtime, F5 recommends deploying the new VELOS hardware alongside existing BIG-IP deployment.
+To minimize downtime, F5 recommends deploying the new hardware alongside existing BIG-IP deployment.
 
 F5 recommends the following procedure for moving production traffic to a new device:
 
-1. Deploy the VELOS device, trying to keep physical connections as close as possible to the old BIG-IP (respective interfaces assigned to the same physical networks)
-1. Remove interfaces to existing VLANs on the new VELOS hardware (this will impact **all** tenants on VELOS).
+1. Deploy the target device, trying to keep physical connections as close as possible to the old BIG-IP (respective interfaces assigned to the same physical networks)
+1. Remove interfaces to existing VLANs on the **new hardware** (this will impact **all** tenants on VELOS/vCMP guests).
    <br/>There are three options to do this:
-    1.  Disabling interfaces on the VELOS chassis.
-    1.  Physically unplugging the network cables on VELOS platform.
-    1.  Disable the port on the switch connected to the VELOS platform.
-1. Deploy Journeys-generated config to a new BIG-IP. Note that some validators like LTM module comparison are expected to fail as Virtual Servers will be down.
+    1.  Disabling interfaces.
+    1.  Physically unplugging the network cables.
+    1.  Disabling the port on the switch connected to the destination platform.
+1. Deploy JOURNEYS-generated config to a new BIG-IP. Note that some validators like LTM module comparison are expected to fail as Virtual Servers will be down.
 1. If the configuration was deployed successfully, review the system status. If the status is "REBOOT REQUIRED", perform the reboot before shutting down interfaces on the old BIG-IP system.
 1. If you use BIG-IQ, refer to the [article K15938](https://support.f5.com/csp/article/K15938) to discover your new BIG-IP device.
-1. Shutdown interfaces on the old BIG-IP system (this will impact **all** source BIG-IPs). 
+1. Shutdown interfaces on the **old BIG-IP system** (this will impact **all** source BIG-IPs). 
    <br/>There are three options to do this:
-    1. Disabling interfaces on old BIG-IP system.
-    1. Physically unplugging the network cables on old BIG-IP system.
-    1. Disable the port on the switch connected to the old BIG-IP system.
-1. Re-add interfaces to existing VLANs on the new VELOS hardware (this will impact **all** tenants on VELOS).
+    1. Disabling interfaces.
+    1. Physically unplugging the network cables.
+    1. Disabling the port on the switch connected to the old BIG-IP system.
+1. Re-add interfaces to existing VLANs on the **new hardware** (this will impact **all** tenants on VELOS/vCMP guests).
     <br/>There are three options to do this:
-    1. Re-enable interfaces on the VELOS chassis.
-    1. Physically unplug the network cables on the source platform, plug the network cables on the VELOS platform.
-    1. Enable the port on the switch connected to the VELOS platform.
+    1. Re-enable interfaces on the destination platform.
+    1. Physically unplug the network cables on the source platform, plug the network cables on the destination platform.
+    1. Enable the port on the switch connected to the destination platform.
 
 ### SPDAG/VlanGroup mitigation
-If SPDAG or VlanGroup removal mitigation is applied, and a conflicted object is configured on a Virtual Server, Journeys **will remove all VLANs assigned for that particular Virtual Server** - not only the conflicted one.
-This is done to ensure that Journeys does not produce an invalid configuration (Virtual Servers cannot share identifiers, as they need to be unique).
+If SPDAG or VlanGroup removal mitigation is applied, and a conflicted object is configured on a Virtual Server, JOURNEYS **will remove all VLANs assigned for that particular Virtual Server** - not only the conflicted one.
+This is done to ensure that JOURNEYS does not produce an invalid configuration (Virtual Servers cannot share identifiers, as they need to be unique).
+
+### Restoring backup UCS in case of migration failure
+Deployment progress can be tracked on the Summary page.
+If UCS load fails, it is strongly advised to manually load the backup UCS archive created during the deployment process before any other action is taken on the Destination System.
+
+   1. Log to the Destination System:
+      ```
+      ssh username@<destination-system-ip>
+      ```
+   1. Use the command to load the backup UCS:
+      ```
+      tmsh load sys ucs <backup_ucs_name*>
+      ```
+      *The backup UCS archive name is displayed on the Summary page in the Detailed Results in a log entry that should look as follows:
+      ```
+      Create backup of the Destination System: /var/local/ucs/journey_ucs_backup_20211012-103937.ucs
+      ```
 
 ----
-## Journeys Setup Requirements
-* [Docker](https://docs.docker.com/get-docker/)
-* [Docker Compose](https://docs.docker.com/compose/gettingstarted/)
+## JOURNEYS Setup Requirements
+* Install [Docker](https://docs.docker.com/get-docker/)
+* Install [Docker Compose](https://docs.docker.com/compose/install/)
 
 ## Usage
 
-### Fetching Journeys
+### Fetching JOURNEYS
 
 ```
 git clone https://github.com/f5devcentral/f5-journeys.git
@@ -407,7 +424,7 @@ cd f5-journeys
 ```
 
 ### Preparing the environment
-1. Create a directory for all of Journeys operations - modifying configs, logging, etc.
+1. Create a directory for all of JOURNEYS operations - modifying configs, logging, etc.
 
    You can use any directory in place of `/tmp/journeys`. 
    ```
@@ -447,7 +464,7 @@ cd f5-journeys
    ```
    https://localhost:8443
    ```
-   and accept self-signed cert to run the application. The certificate itself can be verified by comparing it with the one logged by the main journeys container.
+   and accept self-signed cert to run the application. The certificate itself can be verified by comparing it with the one logged by the main JOURNEYS container.
    ```
    docker logs f5-journeys_journeys_1 2>&1 | grep 'BEGIN CERTIFICATE'
    ```
