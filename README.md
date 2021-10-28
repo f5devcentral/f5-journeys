@@ -64,6 +64,34 @@ JOURNEYS finds the following configuration elements in the source configuration,
          * Remove  `sys syslog` object containing improperly escaped `[` in section `include`
 
    </details>
++ **TRUNK** - trunks cannot be defined on the BIG-IP VCMP guest.
+   <details><summary>Details</summary>
+   
+   * JOURNEYS issue ID: Trunk
+   * Affected BIG-IP versions: 15.x.x, 16.x.x
+   * Available mitigations:
+      * (**default**) Delete unsupported objects
+         * Remove any `net trunk` configuration objects
+   </details>
++ **CompatibilityLevel** - determines the level of platform hardware capability for device DoS/DDoS prevention. Details on the feature and the respective levels can be found [here](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-system-dos-protection-and-protocol-firewall-implementations/detecting-and-preventing-system-dos-and-ddos-attacks.html).
+   <details><summary>Details</summary>
+   
+   * JOURNEYS issue ID: CompatibilityLevel
+   * Affected BIG-IP versions: all
+   * Available mitigations:
+      * (**default**) Set the device compatibility level to level supported by destination BIG-IP platform. 
+      Possible scenarios:
+          * Set the device compatibility level to 0
+             * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 0
+             * Enforce software processing of the DoS protection feature by setting an appropriate BigDB database value
+             * Decreasing compatibility from level 2 to level 0 requires removal `dos network-whitelist` if it's declaration contains field `extended-entries`
+          * Set the device compatibility level to 1
+             * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 1
+             * Decreasing compatibility from level 2 to level 1 requires removal `dos network-whitelist` if it's declaration contains field `extended-entries`
+          * Set the device compatibility level to 2
+             * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 2
+   </details>
+   
 #### Velos specific issues
 + **AAM** - Application Acceleration Manager is not supported on VELOS platform.
    <details><summary>Details</summary>
