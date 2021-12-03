@@ -51,6 +51,32 @@ JOURNEYS finds the following configuration elements in the source configuration,
 
 #### Common issues
 
++ **CompatibilityLevel** - determines the level of platform hardware capability for device DoS/DDoS prevention. Details on the feature and the respective levels can be found [here](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-system-dos-protection-and-protocol-firewall-implementations/detecting-and-preventing-system-dos-and-ddos-attacks.html).
+   <details><summary>Details</summary>
+   
+   * JOURNEYS issue ID: CompatibilityLevel
+   * Affected BIG-IP versions: all
+   * Available mitigations:
+      * (**default**) Set the device compatibility level to level supported by destination BIG-IP platform. 
+      Possible scenarios:
+          * Set the device compatibility level to 0
+             * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 0
+             * Enforce software processing of the DoS protection feature by setting an appropriate BigDB database value
+             * Decreasing compatibility from level 2 to level 0 requires removal `dos network-whitelist` if it's declaration contains field `extended-entries`
+          * Set the device compatibility level to 1
+             * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 1
+             * Decreasing compatibility from level 2 to level 1 requires removal `dos network-whitelist` if it's declaration contains field `extended-entries`
+          * Set the device compatibility level to 2
+             * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 2
+   </details>
++ **MGMT-DHCP** - on VELOS and VCMP systems mgmt-dhcp configuration is handled mostly on a partition level.
+   <details><summary>Details</summary>
+   
+   * JOURNEYS issue ID: MGMT-DHCP
+   * Available mitigations:
+      * (**default**) Disable management DHCP
+         * Set the `sys global-settings` `mgmt-dhcp` value to `disabled`
+   </details>
 + **Syslog** - solves [syslog configuration parsing error](https://support.f5.com/csp/article/K96275603) possible during an upgrade to a destination BIG-IP with version 13.1.0 or higher
    <details><summary>Details</summary>
    
@@ -72,24 +98,6 @@ JOURNEYS finds the following configuration elements in the source configuration,
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `net trunk` configuration objects
-   </details>
-+ **CompatibilityLevel** - determines the level of platform hardware capability for device DoS/DDoS prevention. Details on the feature and the respective levels can be found [here](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-system-dos-protection-and-protocol-firewall-implementations/detecting-and-preventing-system-dos-and-ddos-attacks.html).
-   <details><summary>Details</summary>
-   
-   * JOURNEYS issue ID: CompatibilityLevel
-   * Affected BIG-IP versions: all
-   * Available mitigations:
-      * (**default**) Set the device compatibility level to level supported by destination BIG-IP platform. 
-      Possible scenarios:
-          * Set the device compatibility level to 0
-             * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 0
-             * Enforce software processing of the DoS protection feature by setting an appropriate BigDB database value
-             * Decreasing compatibility from level 2 to level 0 requires removal `dos network-whitelist` if it's declaration contains field `extended-entries`
-          * Set the device compatibility level to 1
-             * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 1
-             * Decreasing compatibility from level 2 to level 1 requires removal `dos network-whitelist` if it's declaration contains field `extended-entries`
-          * Set the device compatibility level to 2
-             * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 2
    </details>
    
 #### Velos specific issues
@@ -152,15 +160,6 @@ JOURNEYS finds the following configuration elements in the source configuration,
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `cm device-group` configuration objects and any references to them
-   </details>
-+ **MGMT-DHCP** - on VELOS mgmt-dhcp configuration is handled mostly on a partition level.
-   <details><summary>Details</summary>
-   
-   * JOURNEYS issue ID: MGMT-DHCP
-   * Affected VELOS BIG-IP versions: all
-   * Available mitigations:
-      * (**default**) Disable management DHCP
-         * Set the `sys global-settings` `mgmt-dhcp` value to `disabled`
    </details>
 + **MTU** - since VELOS currently does not support jumbo frames, we have to limit mtu to 1500.
    <details><summary>Details</summary>
@@ -336,6 +335,7 @@ Mandatory steps before running Full Config migration in JOURNEYS:
 
 1. **Destination System preparation for JOURNEYS**
    1. Destination BIG-IP should be in Active state.
+   1. If migrating from BIG-IP 14.0.x or lower, ensure that `mgmt-dhcp` value in `sys global-settings` on the Destination System is set to either `disabled` or `enabled`. Any other values - namely `dhcpv4` and `dhcpv6`, available starting at 14.1.0 - will cause an error during configuration loading.
    1. VLANs, trunks and interfaces should already be configured on vCMP and VELOS systems.
       For more details, please refer to:
       - [Platform-migrate option overview: K82540512](https://support.f5.com/csp/article/K82540512#p1)

@@ -2382,7 +2382,7 @@ paths:
       summary: Get any generated warnings
       operationId: get_session_warnings
       tags:
-        - Issue Resolution
+        - 5. Resolve Issues
       parameters:
         - name: session_id
           in: path
@@ -3679,27 +3679,47 @@ paths:
         schema:
           type: integer
     get:
-      summary: Get overlapping objects config
-      operationId: get_overlapping_objects
+      summary: Get PerApp configuration
+      operationId: get_perapp_configuration
       tags:
         - Handling of overlapping objects
       responses:
         '200':
-          description: Overlapping objects config
+          description: PerApp configuration
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                example:
-                  - ltm pool
-                  - ltm virtual-address
-                  - ltm monitor
-                  - ltm rule
-                  - ltm profile
-                  - sys folder
-                  - auth partition
+                type: object
+                properties:
+                  merging_overlapping_objects:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - ltm pool
+                      - ltm virtual-address
+                      - ltm monitor
+                      - ltm rule
+                      - ltm profile
+                      - sys folder
+                      - auth partition
+                  regexes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                          enum:
+                            - name
+                            - description
+                        regex:
+                          type: string
+                          description: 'Regular expression containing at least one of named groups: application_name, tenant_name'
+                          example: 'app: (?P<application_name>.*)'
+                      required:
+                        - field
+                        - regex
         '404':
           description: No session exists
           content:
@@ -3731,44 +3751,86 @@ paths:
                   status_code:
                     type: integer
     put:
-      summary: Update overlapping objects config
-      operationId: update_overlapping_objects
+      summary: Update PerApp configuration
+      operationId: update_perapp_configuration
       tags:
         - Handling of overlapping objects
       requestBody:
-        description: Overlapping objects to be updated
+        description: |
+          PerApp configuration to be used.
+          Only one of following is allowed at time: merging_overlapping_objects, regexes
         required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
-                type: string
-              example:
-                - ltm pool
-                - ltm virtual-address
-                - ltm monitor
-                - ltm rule
-                - ltm profile
-                - sys folder
-                - auth partition
+              type: object
+              properties:
+                merging_overlapping_objects:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - ltm pool
+                    - ltm virtual-address
+                    - ltm monitor
+                    - ltm rule
+                    - ltm profile
+                    - sys folder
+                    - auth partition
+                regexes:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      field:
+                        type: string
+                        enum:
+                          - name
+                          - description
+                      regex:
+                        type: string
+                        description: 'Regular expression containing at least one of named groups: application_name, tenant_name'
+                        example: 'app: (?P<application_name>.*)'
+                    required:
+                      - field
+                      - regex
       responses:
         '200':
-          description: Updated overlapping objects config
+          description: Updated PerApp configuration
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                example:
-                  - ltm pool
-                  - ltm virtual-address
-                  - ltm monitor
-                  - ltm rule
-                  - ltm profile
-                  - sys folder
-                  - auth partition
+                type: object
+                properties:
+                  merging_overlapping_objects:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - ltm pool
+                      - ltm virtual-address
+                      - ltm monitor
+                      - ltm rule
+                      - ltm profile
+                      - sys folder
+                      - auth partition
+                  regexes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                          enum:
+                            - name
+                            - description
+                        regex:
+                          type: string
+                          description: 'Regular expression containing at least one of named groups: application_name, tenant_name'
+                          example: 'app: (?P<application_name>.*)'
+                      required:
+                        - field
+                        - regex
         '404':
           description: No session exists
           content:
@@ -3807,7 +3869,7 @@ paths:
         schema:
           type: integer
     post:
-      summary: Explode config to use updated overlapping objects
+      summary: Explode config to use updated PerApp configuration
       operationId: explode_config
       tags:
         - Handling of overlapping objects
@@ -3920,21 +3982,41 @@ paths:
         - Handling of overlapping objects
       responses:
         '200':
-          description: Updated overlapping objects config
+          description: Updated PerApp configuration
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
-                example:
-                  - ltm pool
-                  - ltm virtual-address
-                  - ltm monitor
-                  - ltm rule
-                  - ltm profile
-                  - sys folder
-                  - auth partition
+                type: object
+                properties:
+                  merging_overlapping_objects:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - ltm pool
+                      - ltm virtual-address
+                      - ltm monitor
+                      - ltm rule
+                      - ltm profile
+                      - sys folder
+                      - auth partition
+                  regexes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                          enum:
+                            - name
+                            - description
+                        regex:
+                          type: string
+                          description: 'Regular expression containing at least one of named groups: application_name, tenant_name'
+                          example: 'app: (?P<application_name>.*)'
+                      required:
+                        - field
+                        - regex
         default:
           description: Unexpected error
           content:
