@@ -354,7 +354,7 @@ Supported features:
 + Loading UCS source configurations.
 + Grouping Virtuals into Applications and Tenants, basing on internal dependencies and set preferences.
 + Configuration editor for Virtuals with an easy access to updated AS3 conversion previews.
-+ Converting selected applications into a deployable AS3 declaration using [f5-as3-config-converter](https://github.com/f5devcentral/f5-as3-config-converter/).
++ Converting selected applications into a deployable AS3 declaration using [f5-automation-config-converter](https://github.com/f5devcentral/f5-automation-config-converter/).
 + Deployment of the updated configuration to a specified destination device via AS3.
 + Post-migration diagnostics.
 
@@ -367,13 +367,13 @@ Supported features:
 3. **Tenant** - A group of AS3 applications. By default JOURNEYS creates one tenant per application. `Common` is a special reserved name, represeting objects shared between tenants. Represented by `partitions` on the BIG-IP level.
 
 ### Application conversion status
-Each virtual separately gets assigned a status based on the f5-as3-config-converter response. Possible statuses are as follows:
+Each virtual separately gets assigned a status based on the f5-automation-config-converter response. Possible statuses are as follows:
 
 * Green - All virtual objects appear to convert properly.
 * Red - Virtual configuration includes some objects that are currently marked as `unsupported` by f5-acc-config-converter, and are considered undeployable.
 * Black - Error during a virtual config conversion attempt.
 
-> Note: If one or more of your apps have a red or black status, you may attempt to use a newer version of f5-acc-config-converter by editing the image version inside the `docker-compose.yml` file. Otherwise, please open an issue on [f5devcentral](https://github.com/f5devcentral/f5-journeys/issues) and include configuration contents from the problematic app.
+> Note: If one or more of your apps have a red or black status, you may attempt to use a newer version of f5-automation-config-converter by editing the image version inside the `docker-compose.yml` file. Otherwise, please open an issue on [f5devcentral](https://github.com/f5devcentral/f5-journeys/issues) and include configuration contents from the problematic app.
 
 ### Additional notes
 
