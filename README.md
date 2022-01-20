@@ -152,7 +152,7 @@ JOURNEYS finds the following configuration elements in the source configuration,
       * (**default**) Delete unsupported parameters
          * Remove any `customer-tag` entries in `net vlan` objects
    </details>
-+ **DeviceGroup** - "Device trust can cause UCS load errors on VELOS devices, and device groups are not automatically removed while using the reset-trust option. User will need to manually reconfigure HA after loading the UCS on new devices.
++ **DeviceGroup** - "Device Groups are fully supported on VELOS/rSeries tenants. However, when doing a UCS migration using Journeys, the device group needs to be removed from it to prevent configuration load errors and then re-configured manually once the migrated UCS is loaded on the target platform.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: DeviceGroup
@@ -373,7 +373,7 @@ Each virtual separately gets assigned a status based on the f5-automation-config
 * Red - Virtual configuration includes some objects that are currently marked as `unsupported` by f5-acc-config-converter, and are considered undeployable.
 * Black - Error during a virtual config conversion attempt.
 
-> Note: If one or more of your apps have a red or black status, you may attempt to use a newer version of f5-automation-config-converter by editing the image version inside the `docker-compose.yml` file. Otherwise, please open an issue on [f5devcentral](https://github.com/f5devcentral/f5-journeys/issues) and include configuration contents from the problematic app.
+> Note: If one or more of your apps have a red or black status, you may attempt to use a newer version of f5-acc-config-converter by editing the image version inside the `docker-compose.yml` file. Otherwise, please open an issue on [f5devcentral](https://github.com/f5devcentral/f5-journeys/issues) and include configuration contents from the problematic app.
 
 ### Additional notes
 
