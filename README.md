@@ -7,7 +7,8 @@
 - [Journey: Application Service migration](#journey-application-service-migration)
 - [Configuration Migration Considerations](#configuration-migration-considerations)
 - [JOURNEYS Setup Requirements](#journeys-setup-requirements)
-- [Usage](#usage)
+- [JOURNEYS Installation](#journeys-installation)
+- [JOURNEYS Update](#journeys-update)
 - [Feature Details](#feature-details)
 - [Contributing](#contributing)
 
@@ -442,7 +443,11 @@ If UCS load fails, it is strongly advised to manually load the backup UCS archiv
 * Install [Docker](https://docs.docker.com/get-docker/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
 
-## Usage
+### System requirements
+No hard requirements are defined, but we recommend having a minimum of 2 CPUs and 4GB of RAM on the system/VM running Journeys.
+Having more resources might be helpful when attempting to parse very complex UCS archives.
+
+## JOURNEYS Installation
 
 ### Fetching JOURNEYS
 
@@ -497,8 +502,26 @@ cd f5-journeys
    docker logs f5-journeys_journeys_1 2>&1 | grep 'BEGIN CERTIFICATE'
    ```
 
+## JOURNEYS Update
 
+To update Journeys to the latest version, run the following commands.
 
+1. Clean up the old working directory. Sometimes leftover data might not be compatibile with new Journeys version.
+   ```
+   rm -rf /tmp/journeys  # or whichever folder you specified in the .env file
+   ```
+1. Bring down the old containers, pull the newest changes and start the services again.
+   ```
+   docker-compose down
+   git pull
+   docker-compose up -d
+   ```
+
+Older images may then be viewed and removed using the following commands.
+```
+docker images | grep journeys
+docker rmi <image_name>:<version>
+```
 
 ## Feature details
 
