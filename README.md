@@ -506,9 +506,10 @@ cd f5-journeys
 
 To update Journeys to the latest version, run the following commands.
 
-1. Clean up the old working directory. Sometimes leftover data might not be compatibile with new Journeys version.
+1. Clean up the old working directory. Sometimes leftover data might not be compatible with new Journeys version.
    ```
    rm -rf /tmp/journeys  # or whichever folder you specified in the .env file
+   mkdir /tmp/journeys
    ```
 1. Bring down the old containers, pull the newest changes and start the services again.
    ```
