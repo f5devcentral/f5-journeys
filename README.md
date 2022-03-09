@@ -9,6 +9,7 @@
 - [JOURNEYS Setup Requirements](#journeys-setup-requirements)
 - [JOURNEYS Installation](#journeys-installation)
 - [JOURNEYS Update](#journeys-update)
+- [JOURNEYS API](#journeys-api)
 - [Feature Details](#feature-details)
 - [Contributing](#contributing)
 
@@ -17,7 +18,7 @@
 JOURNEYS is an application designed to assist F5 Customers with migrating a BIG-IP configuration to a new F5 device and enable new ways of migrating.
 
 Supported journeys:
-+ Full Config migration - migrating a BIG-IP configuration from any version starting at 11.5.0 to a higher one, including VELOS systems.
++ Full Config migration - migrating a BIG-IP configuration from any version starting at 11.5.0 to a higher one, including VELOS and rSeries systems.
 + Application Service migration - migrating mission critical Applications and their dependencies to a new AS3 configuration and deploying it to a BIG-IP instance of choice.
 
 ## Journey: Full Config migration
@@ -25,11 +26,11 @@ Supported features:
 + Loading UCS or UCS+AS3 source configurations
 + Flagging source configuration feature parity gaps and fixing them with provided built-in solutions
 + Load validation
-+ Deployment of the updated configuration to a destination device, including VELOS VM tenants
++ Deployment of the updated configuration to a destination device, including VELOS and rSeries VM tenants
 + Post-migration diagnostics
 + Generating detailed PDF reports at every stage of the journey
 
-Full config non-VELOS BIG-IP migrations are supported for software paths according to the following matrix:
+Full config BIG-IP migrations are supported for software paths according to the following matrix:
 
 |                 |          |         |         |   DEST  |         |         |         |
 | ----------------| -------- |-------- |-------- |---------|-------- |-------- |-------- |
@@ -52,11 +53,11 @@ JOURNEYS finds the following configuration elements in the source configuration,
 
 #### Common issues
 
-+ **CompatibilityLevel** - determines the level of platform hardware capability for device DoS/DDoS prevention. Details on the feature and the respective levels can be found [here](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-system-dos-protection-and-protocol-firewall-implementations/detecting-and-preventing-system-dos-and-ddos-attacks.html).
++ **CompatibilityLevel** - BIG-IP devices are divided into three categories/levels based on hardware DoS and sPVA related capabilities. Some devices currently do not have hardware support for features included in levels 1 and 2, so some modifications might be necessary if the source device had one of these categories. For more details about compatibility levels, see [here](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-system-dos-protection-and-protocol-firewall-implementations/detecting-and-preventing-system-dos-and-ddos-attacks.html).
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: CompatibilityLevel
-   * Affected BIG-IP versions: all
+   * Affected BIG-IP versions: VELOS ver. <15.1.0, all versions on several other platforms
    * Available mitigations:
       * (**default**) Set the device compatibility level to level supported by destination BIG-IP platform. 
       Possible scenarios:
@@ -67,10 +68,10 @@ JOURNEYS finds the following configuration elements in the source configuration,
           * Set the device compatibility level to 1
              * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 1
              * Decreasing compatibility from level 2 to level 1 requires removal `dos network-whitelist` if it's declaration contains field `extended-entries`
-          * Set the device compatibility level to 2
+          * Set the device compatibility level to 2 (non-VELOS or rSeries)
              * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 2
    </details>
-+ **MGMT-DHCP** - on VELOS and VCMP systems mgmt-dhcp configuration is handled mostly on a partition level.
++ **MGMT-DHCP** - for F5OS tenants (VELOS, rSeries) and vCMP guests, a static IP address is defined when the tenant is deployed, therefore DHCP needs to be disabled.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: MGMT-DHCP
@@ -91,122 +92,114 @@ JOURNEYS finds the following configuration elements in the source configuration,
          * Remove  `sys syslog` object containing improperly escaped `[` in section `include`
 
    </details>
-+ **TRUNK** - trunks cannot be defined on the BIG-IP VCMP guest.
++ **TRUNK** - for F5OS tenants (VELOS, rSeries) and vCMP guests, trunks are defined at the F5OS platform layer or vCMP host layer and not within the tenant or guest. Trunks (Link Aggregation Groups in F5OS) are pre-defined in the F5OS platform layer and VLANs are inherited by the tenant.
    <details><summary>Details</summary>
    
-   * JOURNEYS issue ID: Trunk
-   * Affected BIG-IP versions: 15.x.x, 16.x.x
+   * JOURNEYS issue ID: TRUNK
+   * Affected BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `net trunk` configuration objects
    </details>
    
-#### Velos specific issues
-+ **AAM** - Application Acceleration Manager is not supported on VELOS platform.
+#### Velos and rSeries specific issues
++ **AAM** - Application Acceleration Manager is not supported on VELOS and rSeries platforms.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: AAM
-   * Affected VELOS BIG-IP versions: all
+   * Affected BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Find any `ltm policy` objects used in virtuals used inside `wam applications`. Remove policies which contain a `wam enable` clause
          * In the same virtuals, remove any profiles of type `web-acceleration`
          * Deprovision the `am` module
    </details>
-+ **CGNAT** - VELOS platform does not support [Carrier Grade NAT](https://techdocs.f5.com/en-us/bigip-15-0-0/big-ip-cgnat-implementations.html) configuration.
++ **CGNAT** - CGNAT ([Carrier Grade NAT](https://techdocs.f5.com/en-us/bigip-15-0-0/big-ip-cgnat-implementations.html)) is not supported on this software version.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: CGNAT
    * Affected VELOS BIG-IP versions: 14.1.x
+   * Affected rSeries BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any of the following configuration objects: `ltm lsn-pool`, `ltm profile pcp`, `ltm virtual` with `lsn` type and any references to them
          * Disable the `cgnat` feature module
    </details>
-+ **ClassOfService** - the CoS feature is not supported on the VELOS platform.
++ **ClassOfService** - CoS or DSCP (Differentiated Services Code Point) is not currently supported on this software version.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: ClassOfService
-   * Affected VELOS BIG-IP versions: all
+   * Affected BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any of the following configuration objects: `net cos`
    </details>
-+ **CompatibilityLevel** - determines the level of platform hardware capability for device DoS/DDoS prevention. VELOS currently supports only level 0 and 1 (the latter if software DoS processing mode is enabled). Details on the feature and the respective levels can be found [here](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-system-dos-protection-and-protocol-firewall-implementations/detecting-and-preventing-system-dos-and-ddos-attacks.html).
-   <details><summary>Details</summary>
-   
-   * JOURNEYS issue ID: CompatibilityLevel
-   * Affected VELOS BIG-IP versions: 14.1.x
-   * Available mitigations:
-      * (**default**) Set the device compatibility level to 0
-         * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 0
-      * Set the device compatibility level to 1
-         * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 1
-         * Enforce software processing of the DoS protection feature by setting an appropriate BigDB database value
-   </details>
-+ **DoubleTagging** - indicates support for the IEEE 802.1QinQ standard, informally known as Double Tagging or Q-in-Q, which VELOS does not have as for now. More info on the feature can be found [here](https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-tmos-routing-administration-14-1-0/vlans-vlan-groups-and-vxlan.html).
++ **DoubleTagging** - indicates support for the IEEE 802.1QinQ standard, informally known as Double Tagging or Q-in-Q, is not currently supported on this software version. More info on the feature can be found [here](https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-tmos-routing-administration-14-1-0/vlans-vlan-groups-and-vxlan.html).
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: DoubleTagging
-   * Affected VELOS BIG-IP versions: all
+   * Affected BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported parameters
          * Remove any `customer-tag` entries in `net vlan` objects
    </details>
-+ **DeviceGroup** - "Device Groups are fully supported on VELOS/rSeries tenants. However, when doing a UCS migration using Journeys, the device group needs to be removed from it to prevent configuration load errors and then re-configured manually once the migrated UCS is loaded on the target platform.
++ **DeviceGroup** - Device Groups are fully supported on VELOS/rSeries tenants. However, when doing a UCS migration using Journeys, the device group needs to be removed from it to prevent configuration load errors and then re-configured manually once the migrated UCS is loaded on the target platform.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: DeviceGroup
-   * Affected VELOS BIG-IP versions: all
+   * Affected BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `cm device-group` configuration objects and any references to them
    </details>
-+ **MTU** - since VELOS currently does not support jumbo frames, we have to limit mtu to 1500.
++ **MTU** - since the F5OS tenant currently does not support jumbo frames, we have to limit mtu to 1500.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: MTU
-   * Affected VELOS BIG-IP versions: all
+   * Affected BIG-IP versions: all
    * Available mitigations:
       * (**default**) Change MTU values to the maximum allowed
          * Set any found MTU values in `net vlan` configuration objects to 1500
    </details>
-+ **PEM** - although keeping the PEM configuration in the configuration files will not cause load errors (it will be discarded when loading the UCS), as for now PEM is not functionally supported by VELOS. JOURNEYS removes PEM elements from the configuration to avoid confusion.
++ **PEM** - although keeping the PEM configuration in the configuration files will not cause load errors (it will be discarded when loading the UCS), as for now PEM is not supported in this software version. Journeys removes PEM elements from the configuration to avoid confusion.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: PEM
    * Affected VELOS BIG-IP versions: 14.1.x
+   * Affected rSeries BIG-IP versions: all
    * Available mitigations:
       * (**default**) Remove unsupported objects
          * Disable provisioning of the PEM module
          * Remove any non-default configuration objects from the `pem` module
          * Remove any iRules using the following PEM-specific expressions: `CLASSIFICATION::`, `CLASSIFY::`, `PEM::`, `PSC::`
    </details>
-+ **RoundRobin** - Round Robin DAG configuration is not available on VELOS guest systems.
++ **RoundRobin** - Round Robin DAG configuration is not currently supported on this software version.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: RoundRobin
-   * Affected VELOS BIG-IP versions: all
+   * Affected BIG-IP versions: all
    * Available mitigations:
       * (**default**) Remove unsupported objects
          * Remove all settings other than `dag-ipv6-prefix-len` from the `net dag-globals` configuration object
    </details>
-+ **SPDAG** - [source/destination DAG](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-service-provider-generic-message-administration/generic-message-example/generic-message-example/about-dag-modes-for-bigip-scalability/sourcedestination-dag-sp-dag.html) is not supported on VELOS.
++ **SPDAG** - [source/destination DAG (Service provider DAG)](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-service-provider-generic-message-administration/generic-message-example/generic-message-example/about-dag-modes-for-bigip-scalability/sourcedestination-dag-sp-dag.html) is not supported in this software version.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: SPDAG
    * Affected VELOS BIG-IP versions: 14.1.x
+   * Affected rSeries BIG-IP versions: all
    * Available mitigations:
       * (**default**) Set unsupported vlan parameters to default
          * Change `cmp-hash` values in all `net vlan` configuration objects to `default`
       * Remove all vlans having unsupported parameters
          * Remove all vlans having non-default `cmp-hash` values, as well as any references to them
    </details>
-+ **sPVA** - some security Packet Velocity Acceleration (PVA) features do not have hardware support on VELOS - these either must be removed or set to use software mode.
++ **sPVA** - some security Packet Velocity Acceleration (PVA) features do not have hardware support in this software version - these either must be removed or set to use software mode.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: sPVA
    * Affected VELOS BIG-IP versions: 14.1.x
+   * Affected rSeries BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove `address-lists` defined in any `security dos network-whitelist` configuration objects
@@ -216,29 +209,20 @@ JOURNEYS finds the following configuration elements in the source configuration,
          * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 1
          * Enforce software processing of the DoS protection feature by setting an appropriate BigDB database value
    </details>
-+ **TRUNK** - on VELOS Trunks cannot be defined on the BIG-IP level.
-   <details><summary>Details</summary>
-   
-   * JOURNEYS issue ID: TRUNK
-   * Affected VELOS BIG-IP versions: all
-   * Available mitigations:
-      * (**default**) Delete unsupported objects
-         * Remove any `net trunk` configuration objects
-   </details>
-+ **VirtualWire** - the [virtual-wire feature](https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/big-ip-system-configuring-for-layer-2-transparency-14-0-0/01.html) is not supported on VELOS systems.
++ **VirtualWire** - the [virtual-wire feature](https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/big-ip-system-configuring-for-layer-2-transparency-14-0-0/01.html) is not supported in this software version.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: VirtualWire
-   * Affected VELOS BIG-IP versions: all
+   * Affected BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `net trunk` configuration objects
    </details>
-+ **VlanGroup** - on VELOS [vlan-groups](https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-tmos-routing-administration-14-1-0/vlans-vlan-groups-and-vxlan.html) cannot be defined on the BIG-IP level.
++ **VlanGroup** - [vlan-groups](https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-tmos-routing-administration-14-1-0/vlans-vlan-groups-and-vxlan.html) aren't supported in this software version and will be defined at the F5OS layer when supported.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: VlanGroup
-   * Affected VELOS BIG-IP versions: all
+   * Affected BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `net vlan-group` configuration objects
@@ -247,18 +231,19 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: VLANMACassignment
-   * Affected VELOS BIG-IP versions: all
+   * Affected BIG-IP versions: all
    * Available mitigations:
       * (**default**) Modify unsupported value to `unique`
          * Set the `share-single-mac` value in `ltm global-settings` and the respective BigDB database value to `unique`
       * Modify unsupported value to `global`
          * Set the `share-single-mac` value in `ltm global-settings` and the respective BigDB database value to `global`
    </details>
-+ **WildcardWhitelist** - a part of sPVA - extended-entries field in network-whitelist objects is not supported.
++ **WildcardWhitelist** - a part of sPVA - extended-entries field in network-whitelist objects is not supported in this software version.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: WildcardWhitelist
    * Affected VELOS BIG-IP versions: 14.1.x
+   * Affected VELOS BIG-IP versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `security network-whitelist` objects containing an `extended-entries` key
@@ -267,8 +252,8 @@ JOURNEYS finds the following configuration elements in the source configuration,
 **JOURNEYS does not support** feature parity gaps that:
 
 + Reside outside a UCS archive to be migrated, e.g. in a host UCS (not in a guest UCS):
-    + Crypto/Compression Guest Isolation - Dedicated/Shared SSL-mode for guests is not supported on VELOS. [Feature details.](https://support.f5.com/csp/article/K22363295)
-    + Traffic Rate Limiting (affects vCMP guests only) - assigning a traffic profile for vcmp guests is currently not supported on a VELOS tenant.
+    + Crypto/Compression Guest Isolation - Dedicated/Shared SSL-mode for guests is not supported on VELOS and rSeries. [Feature details.](https://support.f5.com/csp/article/K22363295)
+    + Traffic Rate Limiting (affects vCMP guests only) - assigning a traffic profile for vcmp guests is currently not supported on VELOS and rSeries tenants.
 
 + Do not cause any config load failures on VELOS:
 
@@ -337,7 +322,7 @@ Mandatory steps before running Full Config migration in JOURNEYS:
 1. **Destination System preparation for JOURNEYS**
    1. Destination BIG-IP should be in Active state.
    1. If migrating from BIG-IP 14.0.x or lower, ensure that `mgmt-dhcp` value in `sys global-settings` on the Destination System is set to either `disabled` or `enabled`. Any other values - namely `dhcpv4` and `dhcpv6`, available starting at 14.1.0 - will cause an error during configuration loading.
-   1. VLANs, trunks and interfaces should already be configured on vCMP and VELOS systems.
+   1. VLANs, trunks and interfaces should already be configured on vCMP, rSeries and VELOS systems.
       For more details, please refer to:
       - [Platform-migrate option overview: K82540512](https://support.f5.com/csp/article/K82540512#p1)
 
@@ -398,7 +383,7 @@ To minimize downtime, F5 recommends deploying the new hardware alongside existin
 F5 recommends the following procedure for moving production traffic to a new device:
 
 1. Deploy the target device, trying to keep physical connections as close as possible to the old BIG-IP (respective interfaces assigned to the same physical networks)
-1. Remove interfaces to existing VLANs on the **new hardware** (this will impact **all** tenants on VELOS/vCMP guests).
+1. Remove interfaces to existing VLANs on the **new hardware** (this will impact **all** tenants on VELOS/rSeries/vCMP guests).
    <br/>There are three options to do this:
     1.  Disabling interfaces.
     1.  Physically unplugging the network cables.
@@ -411,7 +396,7 @@ F5 recommends the following procedure for moving production traffic to a new dev
     1. Disabling interfaces.
     1. Physically unplugging the network cables.
     1. Disabling the port on the switch connected to the old BIG-IP system.
-1. Re-add interfaces to existing VLANs on the **new hardware** (this will impact **all** tenants on VELOS/vCMP guests).
+1. Re-add interfaces to existing VLANs on the **new hardware** (this will impact **all** tenants on VELOS/rSeries/vCMP guests).
     <br/>There are three options to do this:
     1. Re-enable interfaces on the destination platform.
     1. Physically unplug the network cables on the source platform, plug the network cables on the destination platform.
@@ -442,6 +427,7 @@ If UCS load fails, it is strongly advised to manually load the backup UCS archiv
 ## JOURNEYS Setup Requirements
 * Install [Docker](https://docs.docker.com/get-docker/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
+   * Other alternatives like [Podman](https://podman.io/) combined with [Podman Compose](https://github.com/containers/podman-compose) might be viable, but they were not tested
 
 ### System requirements
 No hard requirements are defined, but we recommend having a minimum of 2 CPUs and 4GB of RAM on the system/VM running Journeys.
@@ -523,6 +509,14 @@ Older images may then be viewed and removed using the following commands.
 docker images | grep journeys
 docker rmi <image_name>:<version>
 ```
+
+## JOURNEYS API
+
+An API is exposed by the main `journeys` container (by default on port `8443`). Available endpoints are shown in the `openapi-schema.yaml` file, which can also be imported in a tool like [Postman](https://www.postman.com/) or [Swagger UI](https://swagger.io/tools/swagger-ui/) for easier exploring and/or usage.
+
+### Known API issues
+
+* Attempting to call an invalid endpoint will return a broken html with a 200 code rather than a 404 error one.
 
 ## Feature details
 
