@@ -190,9 +190,12 @@ paths:
                                     example: 10.0.0.1
                               - type: object
                                 properties:
-                                  is_velos:
+                                  type:
                                     type: string
-                                    example: true
+                                    enum:
+                                      - velos
+                                      - rseries
+                                      - other
                                   platform:
                                     type: string
                                     example: Z101
@@ -219,9 +222,12 @@ paths:
                                 example: 10.0.0.1
                           - type: object
                             properties:
-                              is_velos:
+                              type:
                                 type: string
-                                example: true
+                                enum:
+                                  - velos
+                                  - rseries
+                                  - other
                               platform:
                                 type: string
                                 example: Z101
@@ -554,9 +560,12 @@ paths:
                                     example: 10.0.0.1
                               - type: object
                                 properties:
-                                  is_velos:
+                                  type:
                                     type: string
-                                    example: true
+                                    enum:
+                                      - velos
+                                      - rseries
+                                      - other
                                   platform:
                                     type: string
                                     example: Z101
@@ -583,9 +592,12 @@ paths:
                                 example: 10.0.0.1
                           - type: object
                             properties:
-                              is_velos:
+                              type:
                                 type: string
-                                example: true
+                                enum:
+                                  - velos
+                                  - rseries
+                                  - other
                               platform:
                                 type: string
                                 example: Z101
@@ -966,9 +978,12 @@ paths:
                                     example: 10.0.0.1
                               - type: object
                                 properties:
-                                  is_velos:
+                                  type:
                                     type: string
-                                    example: true
+                                    enum:
+                                      - velos
+                                      - rseries
+                                      - other
                                   platform:
                                     type: string
                                     example: Z101
@@ -995,9 +1010,12 @@ paths:
                                 example: 10.0.0.1
                           - type: object
                             properties:
-                              is_velos:
+                              type:
                                 type: string
-                                example: true
+                                enum:
+                                  - velos
+                                  - rseries
+                                  - other
                               platform:
                                 type: string
                                 example: Z101
@@ -1415,392 +1433,6 @@ paths:
                     type: string
                   status_code:
                     type: integer
-  '/sessions/{session_id}/backup':
-    post:
-      summary: Back up current session state
-      operationId: session_backup
-      tags:
-        - Session Management
-      requestBody:
-        description: Duplicated session data
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                new_name:
-                  type: string
-      parameters:
-        - name: session_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Session details
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - type: object
-                    required:
-                      - id
-                      - url
-                      - name
-                    properties:
-                      last_update_time:
-                        type: string
-                        format: date-time
-                        example: '2021-01-28T15:24:05.029102Z'
-                      id:
-                        type: integer
-                      journey_type:
-                        type: string
-                        enum:
-                          - FULL
-                          - PER-APP
-                      url:
-                        type: string
-                        example: 'http://localhost/sessions/{session_id}'
-                      name:
-                        type: string
-                      description:
-                        type: string
-                  - type: object
-                    required:
-                      - source
-                      - conflicts
-                      - changes
-                    properties:
-                      source:
-                        allOf:
-                          - allOf:
-                              - type: object
-                                properties:
-                                  host:
-                                    type: string
-                                    example: 10.0.0.1
-                              - type: object
-                                properties:
-                                  is_velos:
-                                    type: string
-                                    example: true
-                                  platform:
-                                    type: string
-                                    example: Z101
-                                  version:
-                                    type: string
-                                    example: 14.1.1.0
-                          - type: object
-                            required:
-                              - input_ucs_name
-                              - input_as3_name
-                            properties:
-                              input_ucs_name:
-                                type: string
-                                example: test.ucs
-                              input_as3_name:
-                                type: string
-                                example: test.json
-                      destination:
-                        allOf:
-                          - type: object
-                            properties:
-                              host:
-                                type: string
-                                example: 10.0.0.1
-                          - type: object
-                            properties:
-                              is_velos:
-                                type: string
-                                example: true
-                              platform:
-                                type: string
-                                example: Z101
-                              version:
-                                type: string
-                                example: 14.1.1.0
-                      conflicts:
-                        type: array
-                        items:
-                          type: object
-                          required:
-                            - id
-                            - summary
-                          properties:
-                            id:
-                              type: string
-                              example: SPDAG
-                            summary:
-                              type: string
-                              example: 'net vlan example_vlan: Value of field cmp hash is not supported on target platform'
-                            resolved:
-                              type: boolean
-                              example: true
-                            affected_objects:
-                              type: object
-                              additionalProperties: true
-                              items:
-                                type: string
-                              example:
-                                - net vlan /Common/vlan1:
-                                    file: bigip_base.conf
-                                    comment: Value of field cmp-hash is not supported on target platform
-                                    object: 'net vlan /Common/vlan1 {\n    cmp-hash src-ip\n    tag 4094\n}'
-                                - net vlan /Common/vlan2:
-                                    file: bigip_base.conf
-                                    comment: Value of field cmp hash is not supported on target platform
-                                    object: 'net vlan /Common/vlan2 {\n    cmp-hash dst-ip\n    tag 4094\n}'
-                            change:
-                              allOf:
-                                - type: object
-                                  required:
-                                    - id
-                                    - message
-                                    - url
-                                  properties:
-                                    id:
-                                      type: integer
-                                    message:
-                                      type: string
-                                    url:
-                                      type: string
-                                      example: 'http://localhost/sessions/{session_id}/changes/{change_id}'
-                              nullable: true
-                      current_conflict:
-                        nullable: true
-                        allOf:
-                          - allOf:
-                              - type: object
-                                required:
-                                  - id
-                                  - summary
-                                properties:
-                                  id:
-                                    type: string
-                                    example: SPDAG
-                                  summary:
-                                    type: string
-                                    example: 'net vlan example_vlan: Value of field cmp hash is not supported on target platform'
-                                  resolved:
-                                    type: boolean
-                                    example: true
-                                  affected_objects:
-                                    type: object
-                                    additionalProperties: true
-                                    items:
-                                      type: string
-                                    example:
-                                      - net vlan /Common/vlan1:
-                                          file: bigip_base.conf
-                                          comment: Value of field cmp-hash is not supported on target platform
-                                          object: 'net vlan /Common/vlan1 {\n    cmp-hash src-ip\n    tag 4094\n}'
-                                      - net vlan /Common/vlan2:
-                                          file: bigip_base.conf
-                                          comment: Value of field cmp hash is not supported on target platform
-                                          object: 'net vlan /Common/vlan2 {\n    cmp-hash dst-ip\n    tag 4094\n}'
-                                  change:
-                                    allOf:
-                                      - type: object
-                                        required:
-                                          - id
-                                          - message
-                                          - url
-                                        properties:
-                                          id:
-                                            type: integer
-                                          message:
-                                            type: string
-                                          url:
-                                            type: string
-                                            example: 'http://localhost/sessions/{session_id}/changes/{change_id}'
-                                    nullable: true
-                              - type: object
-                                required:
-                                  - mitigations
-                                properties:
-                                  files:
-                                    type: array
-                                    items:
-                                      type: object
-                                      required:
-                                        - path
-                                        - url
-                                      properties:
-                                        path:
-                                          type: string
-                                          example: config/bigip.conf
-                                        url:
-                                          type: string
-                                          example: 'http://localhost/sessions/1/files/config/bigip.conf'
-                                  mitigations:
-                                    type: array
-                                    items:
-                                      type: object
-                                      required:
-                                        - name
-                                        - files
-                                      properties:
-                                        name:
-                                          type: string
-                                          example: SPDAG_delete_objects
-                                        files:
-                                          type: array
-                                          items:
-                                            type: object
-                                            required:
-                                              - path
-                                              - url
-                                            properties:
-                                              path:
-                                                type: string
-                                                example: config/bigip.conf
-                                              url:
-                                                type: string
-                                                example: 'http://localhost/sessions/1/files/config/bigip.conf'
-                      changes:
-                        type: array
-                        items:
-                          type: object
-                          required:
-                            - id
-                            - message
-                            - url
-                          properties:
-                            id:
-                              type: integer
-                            message:
-                              type: string
-                            url:
-                              type: string
-                              example: 'http://localhost/sessions/{session_id}/changes/{change_id}'
-                      instructions:
-                        type: object
-                        properties:
-                          message:
-                            type: string
-                      deployments:
-                        type: array
-                        items:
-                          type: object
-                          required:
-                            - destination
-                            - validators
-                          properties:
-                            id:
-                              type: integer
-                              readOnly: true
-                              example: 1
-                            url:
-                              type: string
-                              format: uri
-                              readOnly: true
-                            source:
-                              type: object
-                              properties:
-                                host:
-                                  type: string
-                                  example: 10.0.0.1
-                                username:
-                                  type: string
-                                  example: root
-                                password:
-                                  type: string
-                                  example: default
-                                  writeOnly: true
-                            destination:
-                              type: object
-                              properties:
-                                host:
-                                  type: string
-                                  example: 10.0.0.2
-                                username:
-                                  type: string
-                                  example: root
-                                password:
-                                  type: string
-                                  example: default
-                                  writeOnly: true
-                            bigiq:
-                              type: object
-                              properties:
-                                host:
-                                  type: string
-                                  example: 10.0.0.2
-                                username:
-                                  type: string
-                                  example: root
-                                password:
-                                  type: string
-                                  example: default
-                                  writeOnly: true
-                            validators:
-                              type: array
-                              items:
-                                type: string
-                                enum:
-                                  - MCP status
-                                  - TMM status
-                                  - Prompt state
-                                  - Core dumps
-                                  - DB compare
-                                  - Memory footprint
-                                  - Version check
-                                  - LTM VS check
-                                  - Log watcher
-                              additionalProperties: true
-                              example:
-                                - Prompt state
-                                - MCP status
-                                - Log watcher
-                            save_backup:
-                              type: boolean
-                            status:
-                              type: string
-                              enum:
-                                - Deploying
-                                - Diagnosing
-                                - Process failed
-                                - Process completed
-                              readOnly: true
-                      config_files:
-                        type: object
-                        additionalProperties:
-                          type: string
-                          format: url
-                        example:
-                          config/bigip.conf: 'http://localhost/sessions/1/files/config/bigip.conf'
-                          config/bigip_base.conf: 'http://localhost/sessions/1/config/bigip_base.conf'
-                      last_page:
-                        type: string
-                        enum:
-                          - source_system
-                          - configuration_analysis
-                          - resolve_conflicts
-                          - resolution_summary
-                          - journey_summary
-                          - deployment
-                          - deployment_results
-                          - general_properties
-                          - applications
-                          - as3_conversion
-                          - diagnostics
-                      allow_deployments:
-                        type: boolean
-        '409':
-          description: Session name already exists
-          content:
-            application/json:
-              schema:
-                type: object
-                required:
-                  - detail
-                properties:
-                  detail:
-                    type: string
-                    example: Session test_session already exists.
   '/sessions/{session_id}/source':
     post:
       summary: Provide configuration_source
@@ -1969,9 +1601,12 @@ paths:
                         nullable: true
                   - type: object
                     properties:
-                      is_velos:
+                      type:
                         type: string
-                        example: true
+                        enum:
+                          - velos
+                          - rseries
+                          - other
                       platform:
                         type: string
                         example: Z101
@@ -2048,9 +1683,12 @@ paths:
             schema:
               type: object
               properties:
-                is_velos:
+                type:
                   type: string
-                  example: true
+                  enum:
+                    - velos
+                    - rseries
+                    - other
                 platform:
                   type: string
                   example: Z101
@@ -2071,9 +1709,12 @@ paths:
                         nullable: true
                   - type: object
                     properties:
-                      is_velos:
+                      type:
                         type: string
-                        example: true
+                        enum:
+                          - velos
+                          - rseries
+                          - other
                       platform:
                         type: string
                         example: Z101
@@ -2129,9 +1770,12 @@ paths:
                         nullable: true
                   - type: object
                     properties:
-                      is_velos:
+                      type:
                         type: string
-                        example: true
+                        enum:
+                          - velos
+                          - rseries
+                          - other
                       platform:
                         type: string
                         example: Z101
@@ -8128,6 +7772,10 @@ paths:
                                     example: '2021-01-28T15:24:05.029102Z'
                                   run_time:
                                     type: integer
+                      output_as3_link:
+                        type: string
+                        readOnly: true
+                        example: 'http://localhost:8443/sessions/1/root_files/output.json'
         '202':
           description: Deployment operation has started
           content:
@@ -8361,6 +8009,10 @@ paths:
                                     example: '2021-01-28T15:24:05.029102Z'
                                   run_time:
                                     type: integer
+                      output_as3_link:
+                        type: string
+                        readOnly: true
+                        example: 'http://localhost:8443/sessions/1/root_files/output.json'
         default:
           description: Unexpected error
           content:
@@ -8700,6 +8352,10 @@ paths:
                                     example: '2021-01-28T15:24:05.029102Z'
                                   run_time:
                                     type: integer
+                      output_as3_link:
+                        type: string
+                        readOnly: true
+                        example: 'http://localhost:8443/sessions/1/root_files/output.json'
         '404':
           description: Given deployment operation does not exist
           content:
