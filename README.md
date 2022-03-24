@@ -152,6 +152,16 @@ JOURNEYS finds the following configuration elements in the source configuration,
       * (**default**) Delete unsupported objects
          * Remove any `cm device-group` configuration objects and any references to them
    </details>
++ **FixLL** - F5OS tenants currently do not yet support the guaranteed flow acceleration and collision avoidance the that FIX Low Latency License provides. 
+   <details><summary>Details</summary>
+   
+   * JOURNEYS issue ID: FIXLL
+   * Affected BIG-IP versions: all
+   * Available mitigations:
+      * (**default**) Delete unsupported objects
+         * Remove any of the following configuration objects: `ltm profile fix` and any references to them
+         * Remove any irules containing any of the following FIX keywords: `FIX_HEADER`, `FIX_MESSAGE`, `FIX::` and any references to them
+   </details>
 + **MTU** - since the F5OS tenant currently does not support jumbo frames, we have to limit mtu to 1500.
    <details><summary>Details</summary>
    
@@ -180,7 +190,8 @@ JOURNEYS finds the following configuration elements in the source configuration,
    * Affected BIG-IP versions: all
    * Available mitigations:
       * (**default**) Remove unsupported objects
-         * Remove all settings other than `dag-ipv6-prefix-len` from the `net dag-globals` configuration object
+         * On VELOS: Remove all settings other than `dag-ipv6-prefix-len` from the `net dag-globals` configuration object
+         * on rSeries: Remove all settings from the `net dag-globals` configuration object
    </details>
 + **SPDAG** - [source/destination DAG (Service provider DAG)](https://techdocs.f5.com/en-us/bigip-15-1-0/big-ip-service-provider-generic-message-administration/generic-message-example/generic-message-example/about-dag-modes-for-bigip-scalability/sourcedestination-dag-sp-dag.html) is not supported in this software version.
    <details><summary>Details</summary>
@@ -208,6 +219,15 @@ JOURNEYS finds the following configuration elements in the source configuration,
       * Set the device compatibility level to 1
          * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 1
          * Enforce software processing of the DoS protection feature by setting an appropriate BigDB database value
+   </details>
++ **Tunneling** - Tunneling protocols such as VXLAN, IPSEC, GTP-U, GRE, NVGRE are not optimal in this software version due to the lack of hardware support for DAG on tunnel frames using inner header info. Traffic will not be distributed across all the available TMMs due to inefficient disaggregation, affecting performance. 
+   <details><summary>Details</summary>
+   
+   * JOURNEYS issue ID: Tunneling
+   * Affected BIG-IP versions: all
+   * Available mitigations:
+      * (**default**) Delete unsupported objects
+         * Remove any of the following configuration objects: `net tunnels` and any references to them.
    </details>
 + **VirtualWire** - the [virtual-wire feature](https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/big-ip-system-configuring-for-layer-2-transparency-14-0-0/01.html) is not supported in this software version.
    <details><summary>Details</summary>
@@ -255,11 +275,12 @@ JOURNEYS finds the following configuration elements in the source configuration,
     + Crypto/Compression Guest Isolation - Dedicated/Shared SSL-mode for guests is not supported on VELOS and rSeries. [Feature details.](https://support.f5.com/csp/article/K22363295)
     + Traffic Rate Limiting (affects vCMP guests only) - assigning a traffic profile for vcmp guests is currently not supported on VELOS and rSeries tenants.
 
-+ Do not cause any config load failures on VELOS:
++ Do not cause any config load failures on destination devices:
 
     + [Secure Vault](https://support.f5.com/csp/article/K73034260) - keys will be instead stored on the tenant file system.
     + Several sPVA features which do not support hardware processing, where software support will occur instead (DDoS HW Vectors (Device and VS), Device/VS Block List, Device Vector Bad Actor (Greylist))
     + Wildcard SYN cookie protection - as above, software processing will replace hardware one.
+    + HTTP3 - F5OS tenants currently provide only experimental support for this feature.
 
 ----
 ### BIG-IP Prerequisites
@@ -323,8 +344,21 @@ Mandatory steps before running Full Config migration in JOURNEYS:
    1. Destination BIG-IP should be in Active state.
    1. If migrating from BIG-IP 14.0.x or lower, ensure that `mgmt-dhcp` value in `sys global-settings` on the Destination System is set to either `disabled` or `enabled`. Any other values - namely `dhcpv4` and `dhcpv6`, available starting at 14.1.0 - will cause an error during configuration loading.
    1. VLANs, trunks and interfaces should already be configured on vCMP, rSeries and VELOS systems.
-      For more details, please refer to:
-      - [Platform-migrate option overview: K82540512](https://support.f5.com/csp/article/K82540512#p1)
+      For more details, please refer to: [Platform-migrate option overview: K82540512](https://support.f5.com/csp/article/K82540512#p1).  
+      For VELOS or rSeries tenant configuration, find more information on [F5OS CLI](https://clouddocs.f5.com/api/velos-api/cli-index.html).  
+      VLANs and trunks creation example: 
+      ```
+      config
+      vlans vlan 1000 config name Vlan1000 vlan-id 1000
+      vlans vlan 1001 config name Vlan1000 vlan-id 1001
+      vlans vlan 1002 config name Vlan1000 vlan-id 1002
+      top
+      interfaces interface 1.0 ethernet switched-vlan config trunk-vlans 1000
+      interfaces interface 1.0 ethernet switched-vlan config trunk-vlans 1001
+      interfaces interface 1.0 ethernet switched-vlan config trunk-vlans 1002
+      commit
+      end
+      ```
 
 #### BIG-IP account prerequisites
 To ensure all JOURNEYS features work properly, an account with Administrator role and advanced shell (bash) access is
@@ -455,7 +489,7 @@ cd f5-journeys
    ```
    cp sample.env .env
    ```
-   If you are using a different working directory than the one shown in the point above, `WORKING_DIRECTORY` variable has to be updated in the `.env` file
+   If you are using a different working directory than the one shown in the point above, `WORKING_DIRECTORY` variable has to be updated in the `.env` file. Its value should be an absolute path pointing to your custom directory.
 
 1. Fetch services included in the docker-compose configuration file
    ```
@@ -497,6 +531,7 @@ To update Journeys to the latest version, run the following commands.
    rm -rf /tmp/journeys  # or whichever folder you specified in the .env file
    mkdir /tmp/journeys
    ```
+1. Ensure that your current `.env` file contains all keys present in the `sample.env` file. If not, copy/enter them.
 1. Bring down the old containers, pull the newest changes and start the services again.
    ```
    docker-compose down
