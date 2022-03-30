@@ -35,7 +35,7 @@ Full config BIG-IP migrations are supported for software paths according to the 
 |                 |          |         |         |   DEST  |         |         |         |
 | ----------------| -------- |-------- |-------- |---------|-------- |-------- |-------- |
 |                 |**X**     |**11.x** |**12.x** |**13.x** |**14.x** |**15.x** |**16.x** |
-|                 | **<11.5**|  **X**  |  **X**  |  **X**  |  **X^** |  **X^** |         |
+|                 | **<11.5**|  **X\***  |  **X**  |  **X**  |  **X^** |  **X^** |         |
 |                 | **12.x** |         |  **X**  |  **X**  |  **X**  |  **X^** |         |   
 |      **SRC**    | **13.x** |         |         |  **X**  |  **X**  |  **X**  |         | 
 |                 | **14.x** |         |         |         |  **X**  |  **X**  |  **X**  |
@@ -44,6 +44,8 @@ Full config BIG-IP migrations are supported for software paths according to the 
 
 
 **X^** - an exception compared to the supported upgrade paths listed in the official document [K13845](https://support.f5.com/csp/article/K13845) (upgrade allowed only if the source configuration is upgraded to the latest available maintenance release).
+
+**X\*** - while an upgrade to a 11.x destination system is technically supported on BIG-IP, JOURNEYS does not support deployments to systems runnig these versions due to a lack of platform-migrate ucs load option (introduced in 12.1.3).
 
 
 > WARNING: Migrating Application Services using keys stored in FIPS cards is not supported at the moment, unless the user can restore the FIPS keys with the original (non-fips) ones on the destination platform.
@@ -79,7 +81,7 @@ JOURNEYS finds the following configuration elements in the source configuration,
       * (**default**) Disable management DHCP
          * Set the `sys global-settings` `mgmt-dhcp` value to `disabled`
    </details>
-+ **Syslog** - solves [syslog configuration parsing error](https://support.f5.com/csp/article/K96275603) possible during an upgrade to a destination BIG-IP with version 13.1.0 or higher
++ **Syslog** - solves [syslog configuration parsing error](https://support.f5.com/csp/article/K96275603) possible during an upgrade to a destination BIG-IP with version 13.1.0 or higher.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: Syslog
@@ -92,14 +94,16 @@ JOURNEYS finds the following configuration elements in the source configuration,
          * Remove  `sys syslog` object containing improperly escaped `[` in section `include`
 
    </details>
-+ **TRUNK** - for F5OS tenants (VELOS, rSeries) and vCMP guests, trunks are defined at the F5OS platform layer or vCMP host layer and not within the tenant or guest. Trunks (Link Aggregation Groups in F5OS) are pre-defined in the F5OS platform layer and VLANs are inherited by the tenant.
++ **TRUNK** - for F5OS tenants (VELOS, rSeries) and vCMP guests, trunks are defined at the F5OS platform layer or vCMP host layer and not within the tenant or guest. Trunks (Link Aggregation Groups in F5OS) are pre-defined in the F5OS platform layer and VLANs are inherited by the tenant. Additionally, on VE BIG-IPs [LACP is not supported](https://support.f5.com/csp/article/K85674611).
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: TRUNK
    * Affected BIG-IP versions: all
    * Available mitigations:
-      * (**default**) Delete unsupported objects
+      * (**default for VELOS/rSeries/vCMP guests**) Delete unsupported objects
          * Remove any `net trunk` configuration objects
+      * (**default for VE BIG-IPs**) Disable LACP
+         * Set any found `lacp` field value in `net trunk` configuration objects to `disabled`
    </details>
    
 #### Velos and rSeries specific issues
@@ -161,6 +165,15 @@ JOURNEYS finds the following configuration elements in the source configuration,
       * (**default**) Delete unsupported objects
          * Remove any of the following configuration objects: `ltm profile fix` and any references to them
          * Remove any irules containing any of the following FIX keywords: `FIX_HEADER`, `FIX_MESSAGE`, `FIX::` and any references to them
+   </details>
++ **HTTP3** - Due to a [BIG-IP 15.1.5 bug](https://cdn.f5.com/product/bugtracker/ID1080581.html), virtuals containing HTTP3 profiles might fail to load.
+   <details><summary>Details</summary>
+   
+   * JOURNEYS issue ID: HTTP3
+   * Affected BIG-IP versions: 15.1.5
+   * Available mitigations:
+      * (**default**) Delete unsupported objects
+         * Remove any `ltm virtual` objects containing references to http3 or quic profiles and any references to them.
    </details>
 + **MTU** - since the F5OS tenant currently does not support jumbo frames, we have to limit mtu to 1500.
    <details><summary>Details</summary>
