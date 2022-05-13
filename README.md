@@ -504,8 +504,8 @@ If UCS load fails, it is strongly advised to manually load the backup UCS archiv
    * Other alternatives like [Podman](https://podman.io/) combined with [Podman Compose](https://github.com/containers/podman-compose) might be viable, but they were not tested
 
 ### System requirements
-No hard requirements are defined, but we recommend having a minimum of 2 CPUs and 4GB of RAM on the system/VM running Journeys.
-Having more resources might be helpful when attempting to parse very complex UCS archives.
+If you are running Journeys App in a VM, F5 recommends using [Ubuntu Desktop](https://ubuntu.com/download/desktop) with at least 25 GB of free hard drive space. Make sure you do not have an HTTP server installed as it might interfere with Journeys App.  Having more resources might be helpful when attempting to parse very complex UCS archives.
+
 
 ## JOURNEYS Installation
 
