@@ -233,7 +233,7 @@ JOURNEYS finds the following configuration elements in the source configuration,
          * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 1
          * Enforce software processing of the DoS protection feature by setting an appropriate BigDB database value
    </details>
-+ **Tunneling** - Tunneling protocols such as VXLAN, IPSEC, GTP-U, GRE, NVGRE are not optimal in this software version due to the lack of hardware support for DAG on tunnel frames using inner header info. Traffic will not be distributed across all the available TMMs due to inefficient disaggregation, affecting performance. 
++ **Tunneling** - While they won't cause UCS load errors, tunneling protocols such as VXLAN, IPSEC, GTP-U, GRE, NVGRE are not optimal in this software version due to the lack of hardware support for DAG on tunnel frames using inner header info. Traffic will not be distributed across all the available TMMs due to inefficient disaggregation, affecting performance. 
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: Tunneling
@@ -280,6 +280,16 @@ JOURNEYS finds the following configuration elements in the source configuration,
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `security network-whitelist` objects containing an `extended-entries` key
+   </details>
++ **IpPort** - Hardware acceleration of the [Ip Port](https://support.f5.com/csp/article/K43542321), hash setting is not supported in this software version, enabling it may increase CPU utilization up to 20%.
+   <details><summary>Details</summary>
+
+   * JOURNEYS issue ID: IpPort
+   * Affected VELOS BIG-IP versions: all
+   * Affected rSeries BIG-IP versions: all
+   * Available mitigations:
+      * (**default**) Set unsupported vlan parameters to default
+         * Change `cmp-hash` values in all `net vlan` configuration objects to `default`
    </details>
 
 **JOURNEYS does not support** feature parity gaps that:
@@ -373,6 +383,15 @@ Mandatory steps before running Full Config migration in JOURNEYS:
       end
       ```
 
+1. **FIPS/NetHSM keys migration**<a name="FIPS_NetHSM_keys_migration"></a>
+   * Keys stored in FIPS/NetHSM will not be migrated, since the UCS file does not contain keys of these types.
+   * 	If FIPS/NetHSM keys are in use by the platform, then:
+		- all key files have to be migrated manually from the Source System to the Destination System
+   * 	For more details on how to manually migrate keys stored in FIPS/NetHSM, please read:
+		- [FIPS keys migration](https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/bigip-platform-fips-admin-12-1-3/2.html)
+         - [NetHSM keys migration](https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/big-ip-system-and-thales-hsm-implementation-14-1-0/02.html)
+
+
 #### BIG-IP account prerequisites
 To ensure all JOURNEYS features work properly, an account with Administrator role and advanced shell (bash) access is
 required on both source and target hosts. It can be `root` or any other account. For auditing purposes, a separate account
@@ -403,7 +422,7 @@ Supported features:
 Each virtual separately gets assigned a status based on the f5-automation-config-converter response. Possible statuses are as follows:
 
 * Green - All virtual objects appear to convert properly.
-* Red - Virtual configuration includes some objects that are currently marked as `unsupported` by f5-acc-config-converter, and are considered undeployable.
+* Red - Virtual configuration includes some objects that are currently marked as `as3NotConverted` by f5-automation-config-converter, and are considered undeployable.
 * Black - Error during a virtual config conversion attempt.
 
 > Note: If one or more of your apps have a red or black status, you may attempt to use a newer version of f5-acc-config-converter by editing the image version inside the `docker-compose.yml` file. Otherwise, please open an issue on [f5devcentral](https://github.com/f5devcentral/f5-journeys/issues) and include configuration contents from the problematic app.
@@ -419,7 +438,7 @@ If deploying via JOURNEYS, the application will install the files automatically.
 
 #### Known issues
 
-* JOURNEYS does not support keys generated using a physical FIPS card. If there are any applications referring to these keys, deployment of them will fail.
+* JOURNEYS does not support keys generated using a physical FIPS card or NetHSM. If there are any applications referring to these keys, deployment of them will fail. For more info about keys migration read: [FIPS/NetHSM keys migration](#FIPS_NetHSM_keys_migration)
 
 ----
 ## Configuration Migration Considerations
@@ -452,6 +471,14 @@ F5 recommends the following procedure for moving production traffic to a new dev
 ### SPDAG/VlanGroup mitigation
 If SPDAG or VlanGroup removal mitigation is applied, and a conflicted object is configured on a Virtual Server, JOURNEYS **will remove all VLANs assigned for that particular Virtual Server** - not only the conflicted one.
 This is done to ensure that JOURNEYS does not produce an invalid configuration (Virtual Servers cannot share identifiers, as they need to be unique).
+
+### Rebuilding device trust:
+During migration JOURNEYS will reset the device trust. 
+<br/>F5 reccomends one of the following procedures to rebuild the device trust: 
+* K40832524: Rebuilding device trust using tmsh (11.x - 16.x) 
+<br/>https://support.f5.com/csp/article/K40832524
+* K42161405: Rebuilding device trust using the Configuration utility (11.x - 16.x) 
+<br/>https://support.f5.com/csp/article/K42161405
 
 ### Restoring backup UCS in case of migration failure
 Deployment progress can be tracked on the Summary page.
@@ -713,6 +740,7 @@ This module temporarily modifies Destination configuration files for testing pur
 
 > WARNING: Load validation can produce false positive output if the configuration contains any parts subject to fix-up scripts built into the BIG-IP ucs load process. These fix-ups cannot be automatically incorporated in the validation module.
 
+> WARNING: If the configuration to be validated requires specific values in BigDB.dat file, they must be configured on a destination device before performing the validation, otherwise "load validation" may fail.
 <details>
 <summary>Load validation functional details</summary>
 
@@ -729,6 +757,29 @@ Since the `verify` command requires an unpacked and ready to load configuration 
    * Certificates and keys
    * Database files
 1. If the migration includes an AS3 file, check and potentially install the appsvcs package
+1. If the configuration to be validated requires specific values in BigDB.dat, configure them on a destination device.
+  Example:
+   * Destination device (statemirror.secure value "disable" is configured):
+     ```
+     [root@localhost:Active:Standalone] config # tmsh list sys db statemirror.secure all-properties
+     sys db statemirror.secure {
+     default-value "disable"
+     scf-config "true"
+     value "disable"
+     value-range "disable enable"
+     }
+     [root@localhost:Active:Standalone] config #
+     ```
+   * Load validation error (statemirror.secure value "enable" is required):
+     ```
+     01071958:3: Error configuring Virtual Server (/Common/virtual_server_HTTPS). Connection mirroring requires db variable statemirror.secure to be enabled.
+     Unexpected Error: Validating configuration process failed.
+     ```
+   * Setting required value of statemirror.secure on the destination device:
+     ```
+     tmsh modify sys db statemirror.secure value enable
+     ```
+
 1. Call the `tmsh load sys config verify partitions all` command and check its output. 
 Additionally, verify whether mcpd is in correct state after this operation.
 1. If the migration includes an AS3 file, send a request with modified declaration having its action set as `dry-run` and verify the output
