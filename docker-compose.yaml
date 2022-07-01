@@ -4,14 +4,12 @@ services:
     image: f5devcentral/f5-automation-config-converter:1.20.0
     environment:
       - ACC_API_PORT=${ACC_API_PORT}
-    ports:
-      - "127.0.0.1:${ACC_API_PORT}:8080"
     restart: unless-stopped
     command: serve
     tmpfs: /tmp
 
   journeys:
-    image: f5devcentral/f5-bigip-journeys-app:v3.3.3
+    image: f5devcentral/f5-bigip-journeys-app:v3.3.4
     environment:
       - ACC_API_PORT=${ACC_API_PORT}
       - ACC_API_HOST=acc-api
@@ -40,7 +38,7 @@ services:
       - "6379:6379"
 
   celery-worker:
-    image: f5devcentral/f5-bigip-journeys-app:v3.3.3
+    image: f5devcentral/f5-bigip-journeys-app:v3.3.4
     command: celery -A journeys.backend worker -l debug
     environment:
       - BROKER_URL=${BROKER_URL}
@@ -56,7 +54,5 @@ services:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASS}
-    ports:
-      - "0.0.0.0:${DB_PORT}:5432"
     volumes:
       - "${WORKING_DIRECTORY}/db:/var/lib/postgresql/data"
