@@ -1,7 +1,7 @@
 version: "2"
 services:
   acc-api:
-    image: f5devcentral/f5-automation-config-converter:1.20.0
+    image: f5devcentral/f5-automation-config-converter:1.23.0
     environment:
       - ACC_API_PORT=${ACC_API_PORT}
     restart: unless-stopped
