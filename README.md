@@ -32,20 +32,22 @@ Supported features:
 
 Full config BIG-IP migrations are supported for software paths according to the following matrix:
 
-|                 |          |         |         |   DEST  |         |         |         |
-| ----------------| -------- |-------- |-------- |---------|-------- |-------- |-------- |
-|                 |**X**     |**11.x** |**12.x** |**13.x** |**14.x** |**15.x** |**16.x** |
-|                 | **<11.5**|  **X\***  |  **X**  |  **X**  |  **X^** |  **X^** |         |
-|                 | **12.x** |         |  **X**  |  **X**  |  **X**  |  **X^** |         |   
-|      **SRC**    | **13.x** |         |         |  **X**  |  **X**  |  **X**  |         | 
-|                 | **14.x** |         |         |         |  **X**  |  **X**  |  **X**  |
-|                 | **15.x** |         |         |         |         |  **X**  |  **X**  |
-|                 | **16.x** |         |         |         |         |         |  **X**  |
+|         |           |          |          | DEST     |          |          |           |
+|---------|-----------|----------|----------|----------|----------|----------|-----------|
+|         | **X**     | **11.x** | **12.x** | **13.x** | **14.x** | **15.x** | **16.x**  |
+|         | **<11.5** | **X\***  | **X**    | **X**    | **X^**   | **X^**   |           |
+|         | **12.x**  |          | **X**    | **X**    | **X**    | **X^**   |           |   
+| **SRC** | **13.x**  |          |          | **X**    | **X**    | **X**    |           | 
+|         | **14.x**  |          |          |          | **X**    | **X**    | **X**     |
+|         | **15.x**  |          |          |          |          | **X**    | **X**     |
+|         | **16.x**  |          |          |          |          |          | **X\*\*** |
 
 
 **X^** - an exception compared to the supported upgrade paths listed in the official document [K13845](https://support.f5.com/csp/article/K13845) (upgrade allowed only if the source configuration is upgraded to the latest available maintenance release).
 
 **X\*** - while an upgrade to a 11.x destination system is technically supported on BIG-IP, JOURNEYS does not support deployments to systems runnig these versions due to a lack of platform-migrate ucs load option (introduced in 12.1.3).
+
+**X\*\*** - not supported on rSeries or VELOS platforms.
 
 
 > WARNING: Migrating Application Services using keys stored in FIPS cards is not supported at the moment, unless the user can restore the FIPS keys with the original (non-fips) ones on the destination platform.
