@@ -21,6 +21,8 @@ Supported journeys:
 + Full Config migration - migrating a BIG-IP configuration from any version starting at 11.5.0 to a higher one, including VELOS and rSeries systems.
 + Application Service migration - migrating mission critical Applications and their dependencies to a new AS3 configuration and deploying it to a BIG-IP instance of choice.
 
+Read also the Journeys App solution overview on the [F5.com page](https://www.f5.com/pdf/solution-overview/streamline-big-ip-migrations-and-upgrades-with-f5-journeys-migration-utility.pdf).
+
 ## Journey: Full Config migration
 Supported features:
 + Loading UCS or UCS+AS3 source configurations
