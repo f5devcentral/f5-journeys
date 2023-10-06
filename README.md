@@ -34,15 +34,16 @@ Supported features:
 
 Full config BIG-IP migrations are supported for software paths according to the following matrix:
 
-|         |           |          |          | DEST     |          |          |           |
-|---------|-----------|----------|----------|----------|----------|----------|-----------|
-|         | **X**     | **11.x** | **12.x** | **13.x** | **14.x** | **15.x** | **16.x**  |
-|         | **<11.5** | **X\***  | **X**    | **X**    | **X^**   | **X^**   |           |
-|         | **12.x**  |          | **X**    | **X**    | **X**    | **X^**   |           |   
-| **SRC** | **13.x**  |          |          | **X**    | **X**    | **X**    |           | 
-|         | **14.x**  |          |          |          | **X**    | **X**    | **X**     |
-|         | **15.x**  |          |          |          |          | **X**    | **X**     |
-|         | **16.x**  |          |          |          |          |          | **X\*\*** |
+|                 |          |         |         |   DEST  |         |         |         |         |
+| ----------------| -------- |-------- |-------- |---------|-------- |-------- |-------- |-------- |
+|                 |**X**     |**11.x** |**12.x** |**13.x** |**14.x** |**15.x** |**16.x** |**17.x** |
+|                 | **<11.5**|  **X\***  |  **X**  |  **X**  |  **X^** |  **X^** |         |         |
+|                 | **12.x** |         |  **X**  |  **X**  |  **X**  |  **X^** |         |         |
+|      **SRC**    | **13.x** |         |         |  **X**  |  **X**  |  **X**  |         |         |
+|                 | **14.x** |         |         |         |  **X**  |  **X**  |  **X**  |         |
+|                 | **15.x** |         |         |         |         |  **X**  |  **X**  |  **X**  |
+|                 | **16.x** |         |         |         |         |         |  **X\*\***  |  **X**  |
+|                 | **17.x** |         |         |         |         |         |         |  **X**  |
 
 
 **X^** - an exception compared to the supported upgrade paths listed in the official document [K13845](https://support.f5.com/csp/article/K13845) (upgrade allowed only if the source configuration is upgraded to the latest available maintenance release).
@@ -63,7 +64,10 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: CompatibilityLevel
-   * Affected BIG-IP versions: VELOS ver. <15.1.0, all versions on several other platforms
+   * Affected VELOS versions: BIG-IP TMOS <15.1.4 and F5OS-C <1.2.0
+   * Affected rSeries versions:
+       * r2000/r4000 Series: all
+       * r5000/r10000 Series: BIG-IP TMOS <15.1.8 and F5OS-A <1.3.0
    * Available mitigations:
       * (**default**) Set the device compatibility level to level supported by destination BIG-IP platform. 
       Possible scenarios:
@@ -102,7 +106,7 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: TRUNK
-   * Affected BIG-IP versions: all
+   * Affected BIG-IP TMOS versions: all
    * Available mitigations:
       * (**default for VELOS/rSeries/vCMP guests**) Delete unsupported objects
          * Remove any `net trunk` configuration objects
@@ -115,7 +119,7 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: AAM
-   * Affected BIG-IP versions: all
+   * Affected BIG-IP TMOS versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Find any `ltm policy` objects used in virtuals used inside `wam applications`. Remove policies which contain a `wam enable` clause
@@ -126,8 +130,10 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: CGNAT
-   * Affected VELOS BIG-IP versions: 14.1.x
-   * Affected rSeries BIG-IP versions: all
+   * Affected VELOS versions: BIG-IP TMOS <15.1.4 and F5OS-C <1.2.0
+   * Affected rSeries versions:
+       * r2000/r4000 Series: all
+       * r5000/r10000 Series: BIG-IP TMOS <15.1.8 and F5OS-A <1.4.0
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any of the following configuration objects: `ltm lsn-pool`, `ltm profile pcp`, `ltm virtual` with `lsn` type and any references to them
@@ -137,7 +143,7 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: ClassOfService
-   * Affected BIG-IP versions: all
+   * Affected BIG-IP TMOS versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any of the following configuration objects: `net cos`
@@ -146,7 +152,7 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: DoubleTagging
-   * Affected BIG-IP versions: all
+   * Affected BIG-IP TMOS versions: all
    * Available mitigations:
       * (**default**) Delete unsupported parameters
          * Remove any `customer-tag` entries in `net vlan` objects
@@ -155,7 +161,7 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: DeviceGroup
-   * Affected BIG-IP versions: all
+   * Affected BIG-IP TMOS versions: all
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `cm device-group` configuration objects and any references to them
@@ -164,7 +170,10 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: FIXLL
-   * Affected BIG-IP versions: all
+   * Affected VELOS versions: all
+   * Affected rSeries versions:
+       * r2000/r4000 Series: all
+       * r5000/r10000 Series: F5OS-A <1.4.0
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any of the following configuration objects: `ltm profile fix` and any references to them
@@ -174,16 +183,16 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: HTTP3
-   * Affected BIG-IP versions: 15.1.5
+   * Affected BIG-IP TMOS versions: <15.1.6
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `ltm virtual` objects containing references to http3 or quic profiles and any references to them.
    </details>
-+ **MTU** - since the F5OS tenant currently does not support jumbo frames, we have to limit mtu to 1500.
++ **MTU** - F5OS tenants below version 15.1.5.1 does not support jumbo frames.
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: MTU
-   * Affected BIG-IP versions: all
+   * Affected BIG-IP TMOS versions: <15.1.5.1
    * Available mitigations:
       * (**default**) Change MTU values to the maximum allowed
          * Set any found MTU values in `net vlan` configuration objects to 1500
@@ -204,7 +213,7 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: RoundRobin
-   * Affected BIG-IP versions: all
+   * Affected BIG-IP TMOS versions: all
    * Available mitigations:
       * (**default**) Remove unsupported objects
          * On VELOS: Remove all settings other than `dag-ipv6-prefix-len` from the `net dag-globals` configuration object
@@ -214,8 +223,10 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: SPDAG
-   * Affected VELOS BIG-IP versions: 14.1.x
-   * Affected rSeries BIG-IP versions: all
+   * Affected VELOS versions: BIG-IP TMOS <15.1.4 and F5OS-C <1.2.0
+   * Affected rSeries versions:
+       * r2000/r4000 Series: all
+       * r5000/r10000 Series: BIG-IP TMOS <15.1.8 and F5OS-A <1.3.0
    * Available mitigations:
       * (**default**) Set unsupported vlan parameters to default
          * Change `cmp-hash` values in all `net vlan` configuration objects to `default`
@@ -226,8 +237,10 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: sPVA
-   * Affected VELOS BIG-IP versions: 14.1.x
-   * Affected rSeries BIG-IP versions: all
+   * Affected VELOS versions: BIG-IP TMOS <15.1.4 and F5OS-C <1.2.0
+   * Affected rSeries versions:
+       * r2000/r4000 Series: all
+       * r5000/r10000 Series: BIG-IP TMOS <15.1.8 and F5OS-A <1.3.0
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove `address-lists` defined in any `security dos network-whitelist` configuration objects
@@ -241,7 +254,10 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: Tunneling
-   * Affected BIG-IP versions: all
+   * Affected VELOS versions: BIG-IP TMOS <15.1.4 and F5OS-C <1.2.0
+   * Affected rSeries versions:
+       * r2000/r4000 Series: all
+       * r5000/r10000 Series: BIG-IP TMOS <15.1.8 and F5OS-A <1.3.1
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any of the following configuration objects: `net tunnels` and any references to them.
@@ -250,7 +266,10 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: VirtualWire
-   * Affected BIG-IP versions: all
+   * Affected VELOS versions: all
+   * Affected rSeries versions:
+       * r2000/r4000 Series: all
+       * r5000/r10000 Series: BIG-IP TMOS <17.1.0 and F5OS-A <1.4.0
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `net trunk` configuration objects
@@ -259,7 +278,10 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: VlanGroup
-   * Affected BIG-IP versions: all
+   * Affected VELOS versions: BIG-IP TMOS <15.1.5 and F5OS-C <1.5.0
+   * Affected rSeries versions:
+       * r2000/r4000 Series: all
+       * r5000/r10000 Series: BIG-IP TMOS <15.1.5 and F5OS-A <1.1.0
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `net vlan-group` configuration objects
@@ -268,7 +290,10 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: VLANMACassignment
-   * Affected BIG-IP versions: all
+   * Affected VELOS versions: all
+   * Affected rSeries versions:
+       * r2000/r4000 Series: none
+       * r5000/r10000 Series: all
    * Available mitigations:
       * (**default**) Modify unsupported value to `unique`
          * Set the `share-single-mac` value in `ltm global-settings` and the respective BigDB database value to `unique`
@@ -279,8 +304,10 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
    
    * JOURNEYS issue ID: WildcardWhitelist
-   * Affected VELOS BIG-IP versions: 14.1.x
-   * Affected VELOS BIG-IP versions: all
+   * Affected VELOS versions: BIG-IP TMOS <15.1.4 and F5OS-C <1.2.0
+   * Affected rSeries versions:
+       * r2000/r4000 Series: all
+       * r5000/r10000 Series: BIG-IP TMOS <15.1.8 and F5OS-A <1.3.0
    * Available mitigations:
       * (**default**) Delete unsupported objects
          * Remove any `security network-whitelist` objects containing an `extended-entries` key
@@ -289,8 +316,10 @@ JOURNEYS finds the following configuration elements in the source configuration,
    <details><summary>Details</summary>
 
    * JOURNEYS issue ID: IpPort
-   * Affected VELOS BIG-IP versions: all
-   * Affected rSeries BIG-IP versions: all
+   * Affected VELOS versions: BIG-IP TMOS <15.1.4 and F5OS-C <1.2.0
+   * Affected rSeries versions:
+       * r2000/r4000 Series: all
+       * r5000/r10000 Series: BIG-IP TMOS <15.1.8 and F5OS-A <1.3.0
    * Available mitigations:
       * (**default**) Set unsupported vlan parameters to default
          * Change `cmp-hash` values in all `net vlan` configuration objects to `default`
@@ -508,7 +537,7 @@ If UCS load fails, it is strongly advised to manually load the backup UCS archiv
    * Other alternatives like [Podman](https://podman.io/) combined with [Podman Compose](https://github.com/containers/podman-compose) might be viable, but they were not tested
 
 ### System requirements
-If you are running Journeys App in a VM, F5 recommends using [Ubuntu Desktop](https://ubuntu.com/download/desktop) with at least 25 GB of free hard drive space. Make sure you do not have an HTTP server installed as it might interfere with Journeys App.  Having more resources might be helpful when attempting to parse very complex UCS archives.
+- If you are running Journeys App in a VM, F5 recommends using [Ubuntu Desktop](https://ubuntu.com/download/desktop) (but also other Linux distributions are supported: RHEL/CentOS etc.) with at least 25 GB of free hard drive space. Make sure you do not have an HTTP server installed as it might interfere with Journeys App.  Having more resources might be helpful when attempting to parse very complex UCS archives.
 
 
 ## JOURNEYS Installation
@@ -537,7 +566,7 @@ cd f5-journeys
 
 1. Fetch services included in the docker-compose configuration file
    ```
-   docker-compose pull
+   docker compose pull
    ```
 
 1. Print sha digest of downloaded images
@@ -553,7 +582,7 @@ cd f5-journeys
 
 1. Start services included in the docker-compose configuration file
    ```
-   docker-compose up -d
+   docker compose up -d
    ```
    > Note: services included in the default docker-compose.yaml file do not allow usage of the `perapp` functionalities. To use them, please refer to [perapp documentation](PERAPP.md).
 
@@ -578,9 +607,9 @@ To update Journeys to the latest version, run the following commands.
 1. Ensure that your current `.env` file contains all keys present in the `sample.env` file. If not, copy/enter them.
 1. Bring down the old containers, pull the newest changes and start the services again.
    ```
-   docker-compose down
+   docker compose down
    git pull
-   docker-compose up -d
+   docker compose up -d
    ```
 
 Older images may then be viewed and removed using the following commands.
