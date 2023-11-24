@@ -269,9 +269,30 @@ JOURNEYS finds the following configuration elements in the source configuration,
    * Affected VELOS versions: all
    * Affected rSeries versions:
        * r2000/r4000 Series: all
-       * r5000/r10000 Series: BIG-IP TMOS <17.1.0 and F5OS-A <1.4.0
+       * r5000/r10000 Series: all
    * Available mitigations:
-      * (**default**) Delete unsupported objects
+      * Migrate a classic BIG-IP platform to rSeries or VELOS:
+
+1. Create a corresponding network configuration on your target platform, which includes VLANs and a Virtual Wire.
+
+
+2. Create a tenant with your chosen TMOS BIG-IP image on the target platform, but do not add VLANs or a Virtual Wire.
+
+
+3. Save the UCS file with the configuration of the old BIG-IP platform.
+
+
+4. Use the Journeys app to migrate the UCS file to the new VELOS or rSeries platform. (Journeys from app here: https://github.com/f5devcentral/f5-journeys.)
+
+
+5. Load the UCS onto the tenant created in step 2.
+
+
+6. Add VLANs and a Virtual Wire to the tenant with the loaded configuration from the UCS file on the rSeries or VELOS controller.
+
+      
+      
+ 
          * Remove any `net trunk` configuration objects
    </details>
 + **VlanGroup** - [vlan-groups](https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-tmos-routing-administration-14-1-0/vlans-vlan-groups-and-vxlan.html) aren't supported in this software version and will be defined at the F5OS layer when supported.
