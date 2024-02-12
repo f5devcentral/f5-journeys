@@ -1,6 +1,6 @@
 version: "2"
 services:
-  acc-api:
+  acc:
     image: f5devcentral/f5-automation-config-converter:1.23.3
     environment:
       - ACC_API_PORT=${ACC_API_PORT}
@@ -12,7 +12,7 @@ services:
     image: f5devcentral/f5-bigip-journeys-app:v4.1.0
     environment:
       - ACC_API_PORT=${ACC_API_PORT}
-      - ACC_API_HOST=acc-api
+      - ACC_API_HOST=acc
       - JOURNEYS_PORT=${JOURNEYS_PORT}
       - MIGRATE_DIR=${MIGRATE_DIR}
       - BROKER_URL=${BROKER_URL}
@@ -27,13 +27,13 @@ services:
     ports:
       - "127.0.0.1:${JOURNEYS_PORT}:443"
     depends_on:
-      - acc-api
+      - acc
       - postgres
     volumes:
       - "${WORKING_DIRECTORY}:${MIGRATE_DIR}"
 
   redis:
-    image: redis:latest
+    image: redis:7.2.4
     ports:
       - "6379:6379"
 
@@ -48,7 +48,7 @@ services:
       - journeys
       - redis
   postgres:
-    image: postgres
+    image: postgres:16.1
     restart: always
     environment:
       - POSTGRES_DB=${DB_NAME}
