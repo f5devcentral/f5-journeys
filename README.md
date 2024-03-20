@@ -883,14 +883,8 @@ After the validation is complete, the test host is then restored to the original
 
 </details>
 
-## Contributing
+## Contributing 
 See [here](CONTRIBUTING.md)
 
-### Bug reporting
-
-Let us know if something went wrong. By reporting issues, you support development of this project and get a chance of having it fixed soon.
-Please use bug template available [here](https://github.com/f5devcentral/f5-journeys/issues/new?assignees=&labels=&template=bug_report.md&title=%5BBUG%5D) and attach the journeys.log file from the working directory (`/tmp/journeys` by default)
-
-### Feature requests
-
-Ideas for enhancements are welcome [here](https://github.com/f5devcentral/f5-journeys/issues/new?assignees=&labels=&template=feature_request.md&title=%5BFEAT%5D)
+### Bug reporting and Feature Requests
+See [here](SUPPORT.md)
