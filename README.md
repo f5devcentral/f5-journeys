@@ -250,6 +250,18 @@ JOURNEYS finds the following configuration elements in the source configuration,
          * Adjust the `level` value in the configuration object `sys conmpatibility-level` to 1
          * Enforce software processing of the DoS protection feature by setting an appropriate BigDB database value
    </details>
++ **STP** - [stp](https://techdocs.f5.com/en-us/bigip-14-1-0/big-ip-tmos-routing-administration-14-1-0/spanning-tree-protocol.html) is not supported in this software version.
+   <details><summary>Details</summary>
+   
+   * JOURNEYS issue ID: STP
+   * Affected VELOS versions: all
+   * Affected rSeries versions:
+       * r2000/r4000 Series: all
+       * r5000/r10000 Series: all
+   * Available mitigations:
+      * (**default**) Delete unsupported objects
+         * Remove any `net stp-globals` and `net stp` configuration objects
+   </details>
 + **Tunneling** - While they won't cause UCS load errors, tunneling protocols such as VXLAN, IPSEC, GTP-U, GRE, NVGRE are not optimal in this software version due to the lack of hardware support for DAG on tunnel frames using inner header info. Traffic will not be distributed across all the available TMMs due to inefficient disaggregation, affecting performance. 
    <details><summary>Details</summary>
    
@@ -429,7 +441,7 @@ Mandatory steps before running Full Config migration in JOURNEYS:
    * 	If FIPS/NetHSM keys are in use by the platform, then:
 		- all key files have to be migrated manually from the Source System to the Destination System
    * 	For more details on how to manually migrate keys stored in FIPS/NetHSM, please read:
-		- [FIPS keys migration](https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/bigip-platform-fips-admin-12-1-3/2.html)
+		- [FIPS keys migration](https://techdocs.f5.com/en-us/bigip-14-0-0/f5-platforms-fips-administration/hardware-hsm-setup-and-administration.html#fips-backup-restore-overview)
          - [NetHSM keys migration](https://techdocs.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/big-ip-system-and-thales-hsm-implementation-14-1-0/02.html)
 
 
@@ -557,6 +569,39 @@ git clone https://github.com/f5devcentral/f5-journeys.git
 cd f5-journeys
 ```
 
+### Airgapped installation using a bundle
+1. Download the bundle and the checksum file from [Releases](https://github.com/f5devcentral/f5-journeys/releases/latest) or from [MyF5](https://my.f5.com/manage/s/downloads?productFamily=BIG-IP&productLine=journeys) using a device with internet access.
+
+2. Check the checksum file from the downloaded bundle, see examples for Linux:
+```
+sha512sum -c f5-journeys-bundle-v4.1.0.tgz.sha512
+```
+
+or:
+
+```
+md5sum -c f5-journeys-bundle-v4.1.0.tgz.md5
+```
+
+
+> Note: Do not use the application if the message digest does not match the downloaded file.
+
+3. (optional): Upload the file to target device using your preferred method.
+
+4. Unpack the archive content, for example:
+```
+tar zxvf f5-journeys-bundle-v4.1.0.tgz
+cd f5-journeys
+```
+
+5. Import containers into Docker or other container runtime using following script:
+
+```
+./install.sh
+```
+
+6. Continue directly to steps 1-2 and 6-7 in [Preparing the environment](#preparing-the-environment).
+
 ### Preparing the environment
 1. Create a directory for all of JOURNEYS operations - modifying configs, logging, etc.
 
@@ -593,6 +638,8 @@ cd f5-journeys
    docker compose up -d
    ```
    > Note: services included in the default docker-compose.yaml file do not allow usage of the `perapp` functionalities. To use them, please refer to [perapp documentation](PERAPP.md).
+
+   > Note: for security reasons, not all the ports in docker-compose.yaml are open to the public, such as Redis(6379). To debug Redis, please modify the docker-compose.yaml file to add `ports:` exposing session and run the up command again.
 
 1. Open your web browser, navigate to:
    ```
@@ -837,6 +884,7 @@ After the validation is complete, the test host is then restored to the original
 </details>
 
 ## Contributing
+See [here](CONTRIBUTING.md)
 
 ### Bug reporting
 
