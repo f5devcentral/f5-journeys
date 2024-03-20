@@ -34,8 +34,6 @@ services:
 
   redis:
     image: redis:7.2.4
-    ports:
-      - "6379:6379"
 
   celery-worker:
     image: f5devcentral/f5-bigip-journeys-app:v4.1.0
@@ -47,6 +45,7 @@ services:
     depends_on:
       - journeys
       - redis
+
   postgres:
     image: postgres:16.1
     restart: always

@@ -469,7 +469,7 @@ Supported features:
 
 2. **Application** - A group of AS3 objects, including the virtual mentioned above. Logic for initial grouping of virtuals into apps can be manually set via preferences in GUI before loading the ucs. Represented by `folders` on the BIG-IP level.
 
-3. **Tenant** - A group of AS3 applications. By default JOURNEYS creates one tenant per application. `Common` is a special reserved name, represeting objects shared between tenants. Represented by `partitions` on the BIG-IP level.
+3. **Tenant** - A group of AS3 applications. By default JOURNEYS creates one tenant per application. `Common` is a special reserved name, representing objects shared between tenants. Represented by `partitions` on the BIG-IP level.
 
 ### Application conversion status
 Each virtual separately gets assigned a status based on the f5-automation-config-converter response. Possible statuses are as follows:
@@ -637,7 +637,7 @@ cd f5-journeys
    ```
    docker compose up -d
    ```
-   > Note: services included in the default docker-compose.yaml file do not allow usage of the `perapp` functionalities. To use them, please refer to [perapp documentation](PERAPP.md).
+   > Note: services included in the default docker-compose.yaml file do not allow usage of the `perapp` functionalities. To use them, please refer to [perapp section](#journey-application-service-migration).
 
    > Note: for security reasons, not all the ports in docker-compose.yaml are open to the public, such as Redis(6379). To debug Redis, please modify the docker-compose.yaml file to add `ports:` exposing session and run the up command again.
 
