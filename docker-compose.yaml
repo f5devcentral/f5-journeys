@@ -9,7 +9,7 @@ services:
     tmpfs: /tmp
 
   journeys:
-    image: f5devcentral/f5-bigip-journeys-app:v4.1.0
+    image: f5devcentral/f5-bigip-journeys-app:v4.2.0
     environment:
       - ACC_API_PORT=${ACC_API_PORT}
       - ACC_API_HOST=acc
@@ -36,7 +36,7 @@ services:
     image: redis:7.2.4
 
   celery-worker:
-    image: f5devcentral/f5-bigip-journeys-app:v4.1.0
+    image: f5devcentral/f5-bigip-journeys-app:v4.2.0
     command: celery -A journeys.backend worker -l debug
     environment:
       - BROKER_URL=${BROKER_URL}

@@ -554,7 +554,8 @@ If UCS load fails, it is strongly advised to manually load the backup UCS archiv
 ## JOURNEYS Setup Requirements
 * Install [Docker](https://docs.docker.com/get-docker/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
-   * Other alternatives like [Podman](https://podman.io/) combined with [Podman Compose](https://github.com/containers/podman-compose) might be viable, but they were not tested
+     * Other alternatives like [Podman](https://podman.io/) combined with [Podman Compose](https://github.com/containers/podman-compose) might be viable, but they were not tested
+> **_NOTE:_**  We recommend to use V2 of docker compose as V1 is deprecated, therefore rest of this guide assumes you are using V2 of docker compose.
 
 ### System requirements
 - If you are running Journeys App in a VM, F5 recommends using [Ubuntu Desktop](https://ubuntu.com/download/desktop) (but also other Linux distributions are supported: RHEL/CentOS etc.) with at least 25 GB of free hard drive space. Make sure you do not have an HTTP server installed as it might interfere with Journeys App.  Having more resources might be helpful when attempting to parse very complex UCS archives.
@@ -647,8 +648,18 @@ cd f5-journeys
    ```
    and accept self-signed cert to run the application. The certificate itself can be verified by comparing it with the one logged by the main JOURNEYS container.
    ```
-   docker logs f5-journeys_journeys_1 2>&1 | grep 'BEGIN CERTIFICATE'
+   docker logs f5-journeys_journeys-1 2>&1 | grep 'BEGIN CERTIFICATE'
    ```
+   if the above command returns that no container has been found look for the name of deployment container like so
+   ```
+   docker ps
+   
+   ```
+   and replace the journeys container name with the one you have found with the `docker ps` command
+   ```
+   docker logs <your journeys container name> 2>&1 | grep 'BEGIN CERTIFICATE'
+   ```
+
 
 ## JOURNEYS Update
 
